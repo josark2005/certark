@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/jokin1999/certark/ark"
 	"github.com/spf13/cobra"
 )
 
@@ -11,8 +12,11 @@ func init() {
 
 	var serverCmd = &cobra.Command{
 		Use:   "server",
-		Short: "Start a CertArk server.",
+		Short: "Start a CertArk server",
 		Run: func(cmd *cobra.Command, args []string) {
+			if !CheckRunCondition() {
+				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+			}
 			fmt.Println(serverPort)
 		},
 	}

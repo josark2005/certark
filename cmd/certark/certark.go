@@ -1,6 +1,8 @@
 package main
 
-import "github.com/jokin1999/certark/cmd"
+import (
+	"github.com/jokin1999/certark/cmd"
+)
 
 var version = "dev"
 
