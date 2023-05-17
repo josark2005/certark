@@ -35,11 +35,11 @@ func init() {
 		Use:   "unlock",
 		Short: "Remove init lock file",
 		Run: func(cmd *cobra.Command, args []string) {
+			// check comfirm flag
 			if remove_confirm_flag {
 				// remove lock file
 				removeLockfile()
 			} else {
-				// comfirm needed
 				ark.Warn().Msg("A comfirm flag is required, add --yes-i-really-mean-it flag at the end of the command")
 			}
 		},
