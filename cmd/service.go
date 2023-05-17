@@ -22,6 +22,7 @@ const (
 
 func init() {
 
+	// init command
 	var initCmd = &cobra.Command{
 		Use:   "init",
 		Short: "Initialize CertArk",
@@ -47,6 +48,9 @@ func init() {
 	initLockRemoveCmd.Flags().BoolVarP(&remove_confirm_flag, "yes-i-really-mean-it", "", false, "comfirm to remove init lock")
 
 	initCmd.AddCommand(initLockRemoveCmd)
+
+	// service command
+	//TODO - add service install
 
 	rootCmd.AddCommand(initCmd)
 }
