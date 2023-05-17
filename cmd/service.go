@@ -9,17 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	serviceConfigDir  = "/etc/certark"
-	initLockFile      = ".lock"
-	initLockFilePath  = serviceConfigDir + "/" + initLockFile
-	serviceConfigFile = "config.yml"
-	serviceConfigPath = serviceConfigDir + "/" + serviceConfigFile
-	domainConfigDir   = serviceConfigDir + "/domain"
-	acmeUserKeyDir    = serviceConfigDir + "/userkey"
-	certarkService    = "certark.service"
-)
-
 func init() {
 
 	// init command
@@ -107,27 +96,31 @@ func (r *InitRunCondition) Run() (bool, error) {
 		}
 	}
 
-	ark.Info().Str("path", acmeUserKeyDir).Msg("Checking acme user directory")
-	if !certark.FileOrDirExists(acmeUserKeyDir) {
+	ark.Info().Str("path", acmeUserDir).Msg("Checking acme user directory")
+	if !certark.FileOrDirExists(acmeUserDir) {
 		if !r.CheckMode {
-			err := os.MkdirAll(acmeUserKeyDir, os.ModePerm)
+			err := os.MkdirAll(acmeUserDir, os.ModePerm)
 			if err != nil {
 				ark.Error().Str("error", err.Error()).Msg("Run condition init failed")
 				return false, err
 			}
 		} else {
-			return false, errors.New(acmeUserKeyDir + " not found")
+			return false, errors.New(acmeUserDir + " not found")
 		}
 	}
 
 	// write lock file
-	ark.Info().Str("path", initLockFilePath).Msg("Writing lock file")
-	_, err := os.OpenFile(initLockFilePath, os.O_CREATE, 0660)
-	if err != nil {
-		ark.Error().Str("error", err.Error()).Msg("Run condition init failed")
+	if !r.CheckMode {
+		ark.Info().Str("path", initLockFilePath).Msg("Writing lock file")
+		fp, err := os.OpenFile(initLockFilePath, os.O_CREATE, 0660)
+		if err != nil {
+			ark.Error().Str("error", err.Error()).Msg("Run condition init failed")
+		}
+		defer fp.Close()
+
+		ark.Info().Msg("Initialization success")
 	}
 
-	ark.Info().Msg("Initialization success")
 	return true, nil
 }
 

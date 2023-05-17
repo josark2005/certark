@@ -7,6 +7,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	serviceConfigDir  = "/etc/certark"
+	initLockFile      = ".lock"
+	initLockFilePath  = serviceConfigDir + "/" + initLockFile
+	serviceConfigFile = "config.yml"
+	serviceConfigPath = serviceConfigDir + "/" + serviceConfigFile
+	domainConfigDir   = serviceConfigDir + "/domain"
+	acmeUserDir       = serviceConfigDir + "/user"
+	certarkService    = "certark.service"
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "certark",
 	Short: "CertArk is a certificate requestor based on lego.",
