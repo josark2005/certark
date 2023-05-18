@@ -55,8 +55,9 @@ func (r *InitRunCondition) Run() (bool, error) {
 		ark.Info().Str("path", initLockFilePath).Msg("Checking lock file")
 	}
 	if certark.FileOrDirExists(initLockFilePath) && !r.CheckMode {
-		ark.Error().Str("error", "config directory is locked").Msg("Init condition check failed")
-		return false, errors.New("config directory is locked")
+		err := errors.New("config directory is locked")
+		ark.Error().Err(err).Msg("Init condition check failed")
+		return false, err
 	}
 
 	// check serviceConfigDir
@@ -67,7 +68,7 @@ func (r *InitRunCondition) Run() (bool, error) {
 		if !r.CheckMode {
 			err := os.MkdirAll(serviceConfigDir, os.ModePerm)
 			if err != nil {
-				ark.Error().Str("error", err.Error()).Msg("Run condition init failed")
+				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
 			}
 		} else {
@@ -81,9 +82,9 @@ func (r *InitRunCondition) Run() (bool, error) {
 	}
 	if !certark.FileOrDirExists(serviceConfigPath) {
 		if !r.CheckMode {
-			file, err := os.OpenFile(serviceConfigPath, os.O_WRONLY|os.O_CREATE, 0660)
+			file, err := os.OpenFile(serviceConfigPath, os.O_WRONLY|os.O_CREATE, os.ModeExclusive)
 			if err != nil {
-				ark.Error().Str("error", err.Error()).Msg("Run condition init failed")
+				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
 			}
 			file.WriteString("")
@@ -100,7 +101,7 @@ func (r *InitRunCondition) Run() (bool, error) {
 		if !r.CheckMode {
 			err := os.MkdirAll(domainConfigDir, os.ModePerm)
 			if err != nil {
-				ark.Error().Str("error", err.Error()).Msg("Run condition init failed")
+				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
 			}
 		} else {
@@ -116,7 +117,7 @@ func (r *InitRunCondition) Run() (bool, error) {
 		if !r.CheckMode {
 			err := os.MkdirAll(acmeUserDir, os.ModePerm)
 			if err != nil {
-				ark.Error().Str("error", err.Error()).Msg("Run condition init failed")
+				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
 			}
 		} else {
@@ -127,9 +128,9 @@ func (r *InitRunCondition) Run() (bool, error) {
 	// write lock file
 	if !r.CheckMode {
 		ark.Info().Str("path", initLockFilePath).Msg("Writing lock file")
-		fp, err := os.OpenFile(initLockFilePath, os.O_CREATE, 0660)
+		fp, err := os.OpenFile(initLockFilePath, os.O_CREATE, os.ModeExclusive)
 		if err != nil {
-			ark.Error().Str("error", err.Error()).Msg("Run condition init failed")
+			ark.Error().Err(err).Msg("Run condition init failed")
 		}
 		defer fp.Close()
 
@@ -160,7 +161,7 @@ func removeLockfile() (bool, error) {
 
 	err := os.Remove(initLockFilePath)
 	if err != nil {
-		ark.Error().Str("error", err.Error()).Msg("Remove lock file failed")
+		ark.Error().Err(err).Msg("Remove lock file failed")
 		return false, err
 	}
 
