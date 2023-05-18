@@ -59,66 +59,74 @@ func cmdAcme() *cobra.Command {
 
 // acme add command
 func cmdAcmeAdd() *cobra.Command {
-	var acmeEmail = ""
 	c := &cobra.Command{
-		Use:   "add",
+		Use:   "add [EMAIL]",
 		Short: "Add ACME user",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
 			}
-			if len(acmeEmail) > 0 {
+			if len(args) > 0 {
+				acmeEmail := args[0]
 				if !checkEmail(acmeEmail) {
 					ark.Warn().Msg("Unsupported email format")
 				} else {
 					// add acme user
 					addAcmeUser(acmeEmail)
 				}
-			}
-		},
-	}
-	c.Flags().StringVarP(&acmeEmail, "email", "e", "", "acme user email")
-	c.MarkFlagRequired("email")
-	return c
-}
-
-// acme rm command
-func cmdAcmeRm() *cobra.Command {
-	var acmeEmail = ""
-	c := &cobra.Command{
-		Use:   "rm",
-		Short: "Remove ACME user",
-		Run: func(cmd *cobra.Command, args []string) {
-			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
-			}
-			if len(acmeEmail) > 0 {
-				rmAcmeUser(acmeEmail)
-			}
-		},
-	}
-	c.Flags().StringVarP(&acmeEmail, "email", "e", "", "acme user email")
-	c.MarkFlagRequired("email")
-	return c
-}
-
-// acme set
-func cmdAcmeSet() *cobra.Command {
-	var acmeEmail = ""
-	c := &cobra.Command{
-		Use:   "set [EMAIL] [PATH_OF_PRIVATE_KEY]",
-		Short: "set ACME user",
-		Run: func(cmd *cobra.Command, args []string) {
-			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
-			}
-			if len(acmeEmail) > 0 {
-				rmAcmeUser(acmeEmail)
 			} else {
 				cmd.Help()
 			}
 		},
 	}
+	return c
+}
+
+// acme rm command
+func cmdAcmeRm() *cobra.Command {
+	var comfirm = false
+	c := &cobra.Command{
+		Use:   "rm [EMAIL]",
+		Short: "Remove ACME user",
+		Run: func(cmd *cobra.Command, args []string) {
+			if !CheckRunCondition() {
+				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+			}
+			if len(args) > 0 {
+				acmeEmail := args[0]
+				if !comfirm {
+					ark.Warn().Msg("A comfirm flag is required, add --yes-i-really-mean-it flag at the end of the command")
+					return
+				}
+				rmAcmeUser(acmeEmail)
+			}
+		},
+	}
+	c.Flags().BoolVarP(&comfirm, "yes-i-really-mean-it", "", false, "comfirm to remove acme user")
+	return c
+}
+
+// acme set
+func cmdAcmeSet() *cobra.Command {
+	//TODO - flags
+	var acmeEmail = ""
+	var acmePrivateKeyPath = ""
+	c := &cobra.Command{
+		Use:   "set [EMAIL] -k [PATH_OF_PRIVATE_KEY]",
+		Short: "set ACME user",
+		Run: func(cmd *cobra.Command, args []string) {
+			if !CheckRunCondition() {
+				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+			}
+			if len(acmeEmail) > 0 && len(acmePrivateKeyPath) > 0 {
+				setAcmeUser(acmeEmail, acmePrivateKeyPath)
+			}
+		},
+	}
+	c.Flags().StringVarP(&acmeEmail, "email", "e", "", "acme user email")
+	c.Flags().StringVarP(&acmePrivateKeyPath, "key", "k", "", "file path of acme user private key")
+	c.MarkFlagRequired("email")
+	c.MarkFlagRequired("key")
 	return c
 }
 
@@ -135,7 +143,7 @@ func checkUserExists(email string) bool {
 
 // add acme user
 func addAcmeUser(email string) {
-	if checkUserExists(acmeUserDir + "/" + email) {
+	if checkUserExists(email) {
 		// user exists
 		err := errors.New("user existed")
 		ark.Error().Err(err).Msg("Failed to create user profile")
@@ -146,7 +154,6 @@ func addAcmeUser(email string) {
 	fp, err := os.OpenFile(acmeUserDir+"/"+email, os.O_CREATE|os.O_WRONLY, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to create user profile")
-		fp.Close()
 		return
 	}
 	defer fp.Close()
@@ -169,7 +176,7 @@ func addAcmeUser(email string) {
 
 // remove acme user
 func rmAcmeUser(email string) {
-	if !checkUserExists(acmeUserDir + "/" + email) {
+	if !checkUserExists(email) {
 		// user does not exist
 		err := errors.New("user does not exist")
 		ark.Error().Err(err).Msg("Failed to remove user profile")
@@ -188,7 +195,7 @@ func rmAcmeUser(email string) {
 
 // set acme user profile
 func setAcmeUser(email string, privateKeyPath string) {
-	if !checkUserExists(acmeUserDir + "/" + email) {
+	if !checkUserExists(email) {
 		// user does not exist
 		err := errors.New("user does not exist")
 		ark.Error().Err(err).Msg("Failed to set user profile")
@@ -198,22 +205,22 @@ func setAcmeUser(email string, privateKeyPath string) {
 	// set acme user profile
 	fp, err := os.OpenFile(acmeUserDir+"/"+email, os.O_WRONLY, os.ModeExclusive)
 	if err != nil {
-		ark.Error().Err(err).Msg("Failed to create user profile")
-		fp.Close()
+		ark.Error().Err(err).Msg("Failed to set user profile")
 		return
 	}
 	defer fp.Close()
 
 	// read private key
-	// pkfp, err := os.OpenFile(privateKeyPath, os.O_RDONLY, os.ModeExclusive)
-	// if err != nil {
-
-	// }
+	privatekey, err := os.ReadFile(privateKeyPath)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to set user profile")
+		return
+	}
 
 	// prepare profile data
 	profile := acmeUserProfile{
 		Email:      email,
-		PrivateKey: "",
+		PrivateKey: string(privatekey),
 		Enabled:    true,
 	}
 	profileJson, _ := json.Marshal(profile)
