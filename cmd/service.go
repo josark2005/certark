@@ -46,17 +46,23 @@ func init() {
 
 type InitRunCondition struct {
 	CheckMode bool
+	ShowLog   bool
 }
 
 func (r *InitRunCondition) Run() (bool, error) {
 	// check if directory is lock
-	ark.Info().Str("path", initLockFilePath).Msg("Checking lock file")
+	if r.ShowLog {
+		ark.Info().Str("path", initLockFilePath).Msg("Checking lock file")
+	}
 	if certark.FileOrDirExists(initLockFilePath) && !r.CheckMode {
 		ark.Error().Str("error", "config directory is locked").Msg("Init condition check failed")
 		return false, errors.New("config directory is locked")
 	}
 
-	ark.Info().Str("path", serviceConfigDir).Msg("Checking config directory")
+	// check serviceConfigDir
+	if r.ShowLog {
+		ark.Info().Str("path", serviceConfigDir).Msg("Checking config directory")
+	}
 	if !certark.FileOrDirExists(serviceConfigDir) {
 		if !r.CheckMode {
 			err := os.MkdirAll(serviceConfigDir, os.ModePerm)
@@ -69,7 +75,10 @@ func (r *InitRunCondition) Run() (bool, error) {
 		}
 	}
 
-	ark.Info().Str("path", serviceConfigPath).Msg("Checking service config file")
+	// check serviceConfigPath
+	if r.ShowLog {
+		ark.Info().Str("path", serviceConfigPath).Msg("Checking service config file")
+	}
 	if !certark.FileOrDirExists(serviceConfigPath) {
 		if !r.CheckMode {
 			file, err := os.OpenFile(serviceConfigPath, os.O_WRONLY|os.O_CREATE, 0660)
@@ -83,7 +92,10 @@ func (r *InitRunCondition) Run() (bool, error) {
 		}
 	}
 
-	ark.Info().Str("path", domainConfigDir).Msg("Checking domain directory")
+	// check domainConfigDir
+	if r.ShowLog {
+		ark.Info().Str("path", domainConfigDir).Msg("Checking domain directory")
+	}
 	if !certark.FileOrDirExists(domainConfigDir) {
 		if !r.CheckMode {
 			err := os.MkdirAll(domainConfigDir, os.ModePerm)
@@ -96,7 +108,10 @@ func (r *InitRunCondition) Run() (bool, error) {
 		}
 	}
 
-	ark.Info().Str("path", acmeUserDir).Msg("Checking acme user directory")
+	// check acmeUserDir
+	if r.ShowLog {
+		ark.Info().Str("path", acmeUserDir).Msg("Checking acme user directory")
+	}
 	if !certark.FileOrDirExists(acmeUserDir) {
 		if !r.CheckMode {
 			err := os.MkdirAll(acmeUserDir, os.ModePerm)
@@ -125,7 +140,12 @@ func (r *InitRunCondition) Run() (bool, error) {
 }
 
 func CheckRunCondition() bool {
-	r, _ := (&InitRunCondition{CheckMode: true}).Run()
+	r, _ := (&InitRunCondition{CheckMode: true, ShowLog: false}).Run()
+	return r
+}
+
+func CheckRunConditionWithLog() bool {
+	r, _ := (&InitRunCondition{CheckMode: true, ShowLog: true}).Run()
 	return r
 }
 

@@ -10,22 +10,33 @@ import (
 )
 
 func init() {
-	var acmeEmail = ""
-	// var acmeKeyFile = ""
+	// acme main command
+	var acmeCmd = cmdAcme()
 
-	var acmeCmd = &cobra.Command{
+	acmeCmd.AddCommand(cmdAcmeAdd())
+	acmeCmd.AddCommand(cmdAcmeRm())
+
+	rootCmd.AddCommand(acmeCmd)
+}
+
+// acme command
+func cmdAcme() *cobra.Command {
+	return &cobra.Command{
 		Use:   "acme",
 		Short: "ACME configurations",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
 	}
+}
 
-	var acmeAddCmd = &cobra.Command{
+// acme add command
+func cmdAcmeAdd() *cobra.Command {
+	var acmeEmail = ""
+	c := &cobra.Command{
 		Use:   "add",
 		Short: "Add ACME user",
 		Run: func(cmd *cobra.Command, args []string) {
-			ark.Info().Msg("Adding user ")
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
 			}
@@ -42,36 +53,63 @@ func init() {
 			}
 		},
 	}
-	acmeAddCmd.Flags().StringVarP(&acmeEmail, "email", "e", "", "acme user email")
-
-	// var acmeSetKeyCmd = &cobra.Command{
-	// 	Use:   "key",
-	// 	Short: "Set ACME user key file",
-	// 	Long:  "Specify a ACME user key file for CertArk to read, the key will be stored and managed by CertArk itself.",
-	// 	Run: func(cmd *cobra.Command, args []string) {
-	// 		if len(args) > 0 {
-	// 			fmt.Println("Key:", args[0])
-	// 		} else {
-	// 			cmd.Help()
-	// 		}
-	// 	},
-	// }
-
-	acmeCmd.AddCommand(acmeAddCmd)
-	// acmeCmd.AddCommand(acmeSetKeyCmd)
-
-	rootCmd.AddCommand(acmeCmd)
+	c.Flags().StringVarP(&acmeEmail, "email", "e", "", "acme user email")
+	return c
 }
 
+// acme rm command
+func cmdAcmeRm() *cobra.Command {
+	var acmeEmail = ""
+	c := &cobra.Command{
+		Use:   "rm",
+		Short: "Remove ACME user",
+		Run: func(cmd *cobra.Command, args []string) {
+			if !CheckRunCondition() {
+				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+			}
+			if len(acmeEmail) > 0 {
+				rmAcmeUser(acmeEmail)
+			} else {
+				cmd.Help()
+			}
+		},
+	}
+	c.Flags().StringVarP(&acmeEmail, "email", "e", "", "acme user email")
+	return c
+}
+
+// add acme user
 func addAcmeUser(email string) {
 	if certark.FileOrDirExists(acmeUserDir + "/" + email) {
 		// user exists
+		ark.Error().Str("error", "user existed").Msg("Failed to create user profile")
+		return
 	}
 
 	// create profile
 	fp, err := os.OpenFile(acmeUserDir+"/"+email, os.O_CREATE|os.O_WRONLY, 0660)
 	if err != nil {
-		ark.Error().Str("error", err.Error()).Msg("Failed to create config file")
+		ark.Error().Str("error", err.Error()).Msg("Failed to create user profile")
 	}
 	defer fp.Close()
+
+	ark.Info().Msg("User " + email + " added")
+}
+
+// remove acme user
+func rmAcmeUser(email string) {
+	if !certark.FileOrDirExists(acmeUserDir + "/" + email) {
+		// user does not exist
+		ark.Error().Str("error", "user does not exist").Msg("Failed to remove user profile")
+		return
+	}
+
+	// remove profile
+	err := os.Remove(acmeUserDir + "/" + email)
+	if err != nil {
+		ark.Error().Str("error", err.Error()).Msg("Failed to remove user profile")
+		return
+	}
+
+	ark.Info().Msg("User " + email + " removed")
 }
