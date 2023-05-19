@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/jokin1999/certark/ark"
+	"github.com/jokin1999/certark/tank"
 	"github.com/spf13/cobra"
 )
 
@@ -31,8 +32,15 @@ func Execute(version string) {
 	// disable completion options
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
+	// select running mode
+	if version == "dev" {
+		tank.Save("MODE", tank.MODE_DEV)
+	} else {
+		tank.Save("MODE", tank.MODE_PROD)
+	}
+
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		ark.Error().Err(err).Msg("Failed to run certark")
 		os.Exit(1)
 	}
 }

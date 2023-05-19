@@ -8,7 +8,15 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 
+	"github.com/go-acme/lego/v4/certcrypto"
+	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
+	"github.com/jokin1999/certark/ark"
+)
+
+const (
+	MODE_STAGING    = 0
+	MODE_PRODUCTION = 1
 )
 
 type AcmeUser struct {
@@ -46,4 +54,37 @@ func PrivateKeyDecode(pemEncoded string) *ecdsa.PrivateKey {
 	privateKey, _ := x509.ParseECPrivateKey(x509Encoded)
 
 	return privateKey
+}
+
+func RegisterAcmeUser(email string, mode int) string {
+	// generate user info
+	privateKey, _ := GenPrivateKey()
+	u := AcmeUser{
+		Email: email,
+		Key:   privateKey,
+	}
+
+	// generate lego config
+	config := lego.NewConfig(&u)
+
+	// set server
+	if mode == MODE_STAGING {
+		config.CADirURL = lego.LEDirectoryStaging
+	} else {
+		config.CADirURL = lego.LEDirectoryProduction
+	}
+	config.Certificate.KeyType = certcrypto.RSA2048
+	client, err := lego.NewClient(config)
+	if err != nil {
+		ark.Error().Err(err).Msg("Register acme user failed")
+	}
+
+	// register user
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	if err != nil {
+		ark.Error().Err(err).Msg("Register acme user failed")
+	}
+	u.Registration = reg
+
+	return PrivateKeyEncode(privateKey)
 }

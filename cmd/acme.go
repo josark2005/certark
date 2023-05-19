@@ -9,9 +9,12 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/jokin1999/certark/acme"
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
+	"github.com/jokin1999/certark/tank"
 	"github.com/spf13/cobra"
+	"github.com/tidwall/gjson"
 )
 
 const reEmail = `^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$`
@@ -42,6 +45,9 @@ func init() {
 
 	// acme show
 	acmeCmd.AddCommand(cmdAcmeShow())
+
+	// acme reg
+	acmeCmd.AddCommand(cmdAcmeReg())
 
 	// acme add
 	acmeCmd.AddCommand(cmdAcmeAdd())
@@ -92,6 +98,25 @@ func cmdAcmeShow() *cobra.Command {
 			if len(args) > 0 {
 				acmeEmail := args[0]
 				showAcmeUser(acmeEmail)
+			} else {
+				cmd.Help()
+			}
+		},
+	}
+}
+
+// acme reg
+func cmdAcmeReg() *cobra.Command {
+	return &cobra.Command{
+		Use:   "reg [EMAIL]",
+		Short: "Register a acme user",
+		Run: func(cmd *cobra.Command, args []string) {
+			if !CheckRunCondition() {
+				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+			}
+			if len(args) > 0 {
+				acmeEmail := args[0]
+				regAcmeUser(acmeEmail)
 			} else {
 				cmd.Help()
 			}
@@ -318,5 +343,60 @@ func setAcmeUserPirvateKeyInFile(email string, privateKeyPath string) {
 		ark.Error().Err(err).Msg("Failed to add User " + email)
 	} else {
 		ark.Info().Msg("User " + email + " set")
+	}
+}
+
+// register acme user
+func regAcmeUser(email string) {
+	if !checkUserExists(email) {
+		// user does not exist
+		err := errors.New("user does not exist")
+		ark.Error().Err(err).Msg("Failed to find acme user profile")
+		return
+	}
+
+	profilePath := acmeUserDir + "/" + email
+
+	// read acme user profile
+	profile, err := os.ReadFile(profilePath)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to read acme user profile")
+		return
+	}
+	ark.Debug().Str("content", string(profile)).Msg("Read profile")
+
+	// register acme user
+	acmeUsername := email
+	privateKey := ""
+	if m, _ := tank.Load("mode"); m == tank.MODE_DEV {
+		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_STAGING)
+	} else {
+		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_PRODUCTION)
+	}
+
+	// regenerate profile
+	newProfile := acmeUserProfile{
+		Email:      gjson.Get(string(profile), "email").String(),
+		PrivateKey: privateKey,
+		Enabled:    gjson.Get(string(profile), "enabled").Bool(),
+	}
+
+	// write acme user profile
+	fp, err := os.OpenFile(profilePath, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to open acme user profile")
+		return
+	}
+	defer fp.Close()
+
+	// convert json to string
+	profileJson, _ := json.Marshal(newProfile)
+	ark.Debug().Str("content", string(profileJson)).Msg("prepared profile data")
+
+	// write profile
+	_, err = fp.WriteString(string(profileJson))
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to write acme user profile")
+		return
 	}
 }
