@@ -367,10 +367,10 @@ func regAcmeUser(email string) {
 	// register acme user
 	acmeUsername := email
 	privateKey := ""
-	if m, _ := tank.Load("mode"); m == tank.MODE_DEV {
-		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_STAGING)
-	} else {
+	if m, _ := tank.Load("MODE"); m == tank.MODE_PROD {
 		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_PRODUCTION)
+	} else {
+		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_STAGING)
 	}
 
 	// regenerate profile
