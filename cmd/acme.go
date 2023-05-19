@@ -175,7 +175,6 @@ func cmdAcmeRm() *cobra.Command {
 
 // acme set
 func cmdAcmeSet() *cobra.Command {
-	//TODO - flags
 	var acmePrivateKeyPath = ""
 	c := &cobra.Command{
 		Use:   "set [EMAIL]",
