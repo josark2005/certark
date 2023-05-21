@@ -36,6 +36,17 @@ func checkEmail(email string) bool {
 	return res
 }
 
+// check if acme user exists
+func checkUserExists(email string) bool {
+	res := certark.FileOrDirExists(acmeUserDir + "/" + email)
+	if res {
+		ark.Debug().Msg("Acme user exists")
+	} else {
+		ark.Debug().Msg("Acme user does not exist")
+	}
+	return res
+}
+
 func init() {
 	// acme main command
 	var acmeCmd = cmdAcme()
@@ -81,7 +92,7 @@ func cmdAcmeLs() *cobra.Command {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
 			}
-			listAcmeUser()
+			listAcmeUsers()
 		},
 	}
 }
@@ -128,7 +139,7 @@ func cmdAcmeReg() *cobra.Command {
 func cmdAcmeAdd() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "add [EMAIL]",
-		Short: "Add ACME user",
+		Short: "Add an ACME user",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
@@ -197,19 +208,8 @@ func cmdAcmeSet() *cobra.Command {
 	return c
 }
 
-// check if acme user exists
-func checkUserExists(email string) bool {
-	res := certark.FileOrDirExists(acmeUserDir + "/" + email)
-	if res {
-		ark.Debug().Msg("Acme user exists")
-	} else {
-		ark.Debug().Msg("Acme user does not exist")
-	}
-	return res
-}
-
 // list acme users
-func listAcmeUser() {
+func listAcmeUsers() {
 	err := filepath.Walk(acmeUserDir, func(path string, info os.FileInfo, err error) error {
 		if path == acmeUserDir {
 			return nil
@@ -362,7 +362,7 @@ func regAcmeUser(email string) {
 		ark.Error().Err(err).Msg("Failed to read acme user profile")
 		return
 	}
-	ark.Debug().Str("content", string(profile)).Msg("Read profile")
+	ark.Debug().Str("content", string(profile)).Msg("Read acme user profile")
 
 	// register acme user
 	acmeUsername := email

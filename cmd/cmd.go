@@ -15,6 +15,7 @@ const (
 	serviceConfigFile = "config.yml"
 	serviceConfigPath = serviceConfigDir + "/" + serviceConfigFile
 	domainConfigDir   = serviceConfigDir + "/domain"
+	taskConfigDir     = serviceConfigDir + "/task"
 	acmeUserDir       = serviceConfigDir + "/user"
 	certarkService    = "certark.service"
 )
