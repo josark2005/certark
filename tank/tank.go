@@ -30,3 +30,7 @@ func Load(key string) (string, error) {
 	}
 	return value, nil
 }
+
+func IsDevMode() bool {
+	return Config["MODE"] == "dev"
+}
