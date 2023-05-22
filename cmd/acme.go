@@ -399,3 +399,41 @@ func regAcmeUser(email string) {
 		return
 	}
 }
+
+// get acme user profile
+func GetAcmeUserProfile(email string) (acmeUserProfile, error) {
+	profile := acmeUserDir + "/" + email
+	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
+		err := errors.New("user " + email + " does not exist")
+		ark.Error().Err(err).Msg("Failed to find acme user")
+		return acmeUserProfile{}, err
+	}
+
+	// read file
+	profileContent, err := os.ReadFile(profile)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to read acme user profile")
+		return acmeUserProfile{}, err
+	}
+
+	acme := acmeUserProfile{
+		Email:      gjson.Get(string(profileContent), "email").String(),
+		PrivateKey: gjson.Get(string(profileContent), "privatekey").String(),
+		Enabled:    gjson.Get(string(profileContent), "enabled").Bool(),
+	}
+
+	return acme, nil
+}
+
+// get acme user
+func GetAcmeUser(email string) (acme.AcmeUser, error) {
+	aup, err := GetAcmeUserProfile(email)
+	if err != nil {
+		return acme.AcmeUser{}, err
+	}
+
+	return acme.AcmeUser{
+		Email: aup.Email,
+		Key:   acme.PrivateKeyDecode(aup.PrivateKey),
+	}, nil
+}

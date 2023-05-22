@@ -88,3 +88,17 @@ func RegisterAcmeUser(email string, mode int) string {
 
 	return PrivateKeyEncode(privateKey)
 }
+
+// Generate simple client
+func GenClientSimple(AcmeUser *AcmeUser, mode int) (*lego.Client, error) {
+	config := lego.NewConfig(AcmeUser)
+	if mode == MODE_STAGING {
+		config.CADirURL = lego.LEDirectoryStaging
+	} else {
+		config.CADirURL = lego.LEDirectoryProduction
+	}
+	config.Certificate.KeyType = certcrypto.RSA2048
+
+	client, err := lego.NewClient(config)
+	return client, err
+}

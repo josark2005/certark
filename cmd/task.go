@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/go-acme/lego/v4/certcrypto"
+	"github.com/go-acme/lego/v4/lego"
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
 	"github.com/spf13/cobra"
@@ -15,10 +17,14 @@ import (
 )
 
 type taskProfile struct {
-	TaskName string   `json:"task_name"`
-	Domain   []string `json:"domain"`
-	AcmeUser string   `json:"acme_user"`
-	Enabled  bool     `json:"enabled"`
+	TaskName    string   `json:"task_name"`
+	Domain      []string `json:"domain"`
+	AcmeUser    string   `json:"acme_user"`
+	Enabled     bool     `json:"enabled"`
+	DNSProvider string   `json:"dns_provider"`
+	DNSAuthUser string   `json:"dns_authuser"`
+	DNSAuthKey  string   `json:"dns_authkey"`
+	DNSTTL      int64    `json:"dns_ttl"`
 }
 
 // check if task profile exists
@@ -53,6 +59,9 @@ func init() {
 
 	// task acme
 	taskCmd.AddCommand(cmdTaskSetAcmeUser())
+
+	// task run
+	taskCmd.AddCommand(cmdTaskRun())
 
 	rootCmd.AddCommand(taskCmd)
 }
@@ -163,7 +172,7 @@ func cmdTaskSubtract() *cobra.Command {
 	return c
 }
 
-// acme command
+// task acme command
 func cmdTaskSetAcmeUser() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "acme [TASK] [ACME_ACCOUNT]",
@@ -182,6 +191,25 @@ func cmdTaskSetAcmeUser() *cobra.Command {
 		},
 	}
 	return c
+}
+
+// task run command
+func cmdTaskRun() *cobra.Command {
+	return &cobra.Command{
+		Use:   "run [TASK]",
+		Short: "Run a task",
+		Run: func(cmd *cobra.Command, args []string) {
+			if !CheckRunCondition() {
+				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+			}
+			if len(args) > 0 {
+				task := args[0]
+				runTask(task)
+			} else {
+				cmd.Help()
+			}
+		},
+	}
 }
 
 // list task profiles
@@ -451,4 +479,47 @@ func setAcmeUserTaskProfile(task string, acme string) {
 	} else {
 		ark.Info().Msg("Task " + task + " changed")
 	}
+}
+
+// run task
+func runTask(task string) {
+	if !checkTaskProfileExists(task) {
+		err := errors.New("task does not existed")
+		ark.Error().Err(err).Msg("Failed to run task")
+		return
+	}
+
+	// read profile
+	profileContent, err := os.ReadFile(taskConfigDir + "/" + task)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to run task")
+		return
+	}
+	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
+
+	profile := string(profileContent)
+	acmeUser := gjson.Get(profile, "acme_user").String()
+
+	// check if acme user exists
+	if !checkUserExists(acmeUser) {
+		err := errors.New("acme user does not existed")
+		ark.Error().Err(err).Str("task", task).Msg("Failed to found acme user in task profile")
+		return
+	}
+
+	// read acme user profile
+	au, err := GetAcmeUser(acmeUser)
+	if err != nil {
+		ark.Error().Err(err).Str("task", task).Msg("Read acme user failed")
+		return
+	}
+	config := lego.NewConfig(&au)
+	config.CADirURL = lego.LEDirectoryStaging
+	config.Certificate.KeyType = certcrypto.RSA2048
+
+	client, err := lego.NewClient(config)
+	if err != nil {
+		panic(err)
+	}
+
 }
