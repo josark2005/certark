@@ -17,14 +17,18 @@ import (
 )
 
 type taskProfile struct {
-	TaskName    string   `json:"task_name"`
-	Domain      []string `json:"domain"`
-	AcmeUser    string   `json:"acme_user"`
-	Enabled     bool     `json:"enabled"`
-	DNSProvider string   `json:"dns_provider"`
-	DNSAuthUser string   `json:"dns_authuser"`
-	DNSAuthKey  string   `json:"dns_authkey"`
-	DNSTTL      int64    `json:"dns_ttl"`
+	TaskName              string   `json:"task_name"`
+	Domain                []string `json:"domain"`
+	AcmeUser              string   `json:"acme_user"`
+	Enabled               bool     `json:"enabled"`
+	DNSProvider           string   `json:"dns_provider"`
+	DNSAuthUser           string   `json:"dns_authuser"`
+	DNSAuthKey            string   `json:"dns_authkey"`
+	DNSAuthToken          string   `json:"dns_authtoken"`
+	DNSZoneToken          string   `json:"dns_zonetoken"`
+	DNSTTL                int64    `json:"dns_ttl"`                 // ttl 120 is recommanded
+	DNSPropagationTimeout int64    `json:"dns_propagation_timeout"` // in millisecond, 60*1000 is recommanded
+	DNSPollingInterval    int64    `json:"dns_polling_interval"`    // in millisecond, 5 *1000 is recommanded
 }
 
 // check if task profile exists
@@ -521,5 +525,7 @@ func runTask(task string) {
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println(client)
 
 }
