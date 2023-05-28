@@ -109,6 +109,22 @@ func (r *InitRunCondition) Run() (bool, error) {
 		}
 	}
 
+	// check taskConfigDir
+	if r.ShowLog {
+		ark.Info().Str("path", taskConfigDir).Msg("Checking task directory")
+	}
+	if !certark.FileOrDirExists(taskConfigDir) {
+		if !r.CheckMode {
+			err := os.MkdirAll(taskConfigDir, os.ModePerm)
+			if err != nil {
+				ark.Error().Err(err).Msg("Run condition init failed")
+				return false, err
+			}
+		} else {
+			return false, errors.New(taskConfigDir + " not found")
+		}
+	}
+
 	// check acmeUserDir
 	if r.ShowLog {
 		ark.Info().Str("path", acmeUserDir).Msg("Checking acme user directory")
