@@ -64,6 +64,9 @@ func init() {
 	// task acme
 	taskCmd.AddCommand(cmdTaskSetAcmeUser())
 
+	// task set
+	taskCmd.AddCommand(cmdTaskSet())
+
 	// task run
 	taskCmd.AddCommand(cmdTaskRun())
 
@@ -194,6 +197,52 @@ func cmdTaskSetAcmeUser() *cobra.Command {
 			}
 		},
 	}
+	return c
+}
+
+// task set
+func cmdTaskSet() *cobra.Command {
+	var (
+		domain                  string
+		acmeuser                string
+		enabled                 bool
+		dns_provider            string
+		dns_authuser            string
+		dns_authkey             string
+		dns_authtoken           string
+		dns_zonetoken           string
+		dns_ttl                 int64
+		dns_propagation_timeout int64
+		dns_polling_interval    int64
+	)
+
+	c := &cobra.Command{
+		Use:   "set [TASK]",
+		Short: "Set config values in a task profile",
+		Run: func(cmd *cobra.Command, args []string) {
+			if !CheckRunCondition() {
+				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+			}
+			if len(args) == 2 {
+				fmt.Println(args)
+			} else {
+				cmd.Help()
+			}
+		},
+	}
+
+	c.Flags().StringVarP(&domain, "domain", "d", "", "set domains")
+	c.Flags().StringVarP(&acmeuser, "user", "u", "", "set acme user")
+	c.Flags().BoolVar(&enabled, "enable", true, "enable task")
+	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
+	c.Flags().StringVar(&dns_provider, "provider", "", "set dns provider")
+	c.Flags().StringVar(&dns_authuser, "authuser", "", "set dns auth user or email")
+	c.Flags().StringVar(&dns_authkey, "authkey", "", "set dns auth key")
+	c.Flags().StringVar(&dns_authtoken, "authtoken", "", "set dns auth token")
+	c.Flags().StringVar(&dns_zonetoken, "zonetoken", "", "set dns zone token")
+	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", -1, "set dns record ttl, default 120")
+	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", -1, "set propagation timeout in seconds, default 60")
+	c.Flags().Int64Var(&dns_polling_interval, "interval", -1, "set polling interval in seconds, default 5")
 	return c
 }
 
