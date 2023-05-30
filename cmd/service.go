@@ -11,14 +11,19 @@ import (
 
 func init() {
 
+	force_init_flag := false
+
 	// init command
 	var initCmd = &cobra.Command{
 		Use:   "init",
 		Short: "Initialize CertArk",
 		Run: func(cmd *cobra.Command, args []string) {
-			(&InitRunCondition{}).Run()
+			(&InitRunCondition{
+				ForceInit: force_init_flag,
+			}).Run()
 		},
 	}
+	initCmd.Flags().BoolVarP(&force_init_flag, "force", "f", false, "force initialize")
 
 	var remove_confirm_flag = false
 	var initLockRemoveCmd = &cobra.Command{
@@ -47,6 +52,7 @@ func init() {
 type InitRunCondition struct {
 	CheckMode bool
 	ShowLog   bool
+	ForceInit bool
 }
 
 func (r *InitRunCondition) Run() (bool, error) {
@@ -54,7 +60,12 @@ func (r *InitRunCondition) Run() (bool, error) {
 	if r.ShowLog {
 		ark.Info().Str("path", initLockFilePath).Msg("Checking lock file")
 	}
-	if certark.FileOrDirExists(initLockFilePath) && !r.CheckMode {
+
+	if r.ForceInit {
+		ark.Warn().Msg("Force initializing")
+	}
+
+	if certark.FileOrDirExists(initLockFilePath) && !r.CheckMode && !r.ForceInit {
 		err := errors.New("config directory is locked")
 		ark.Error().Err(err).Msg("Init condition check failed")
 		return false, err
