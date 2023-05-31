@@ -223,15 +223,20 @@ func cmdTaskSet() *cobra.Command {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
 			}
-			if len(args) == 2 {
-				fmt.Println(args)
+			if len(args) == 1 {
+				task := args[0]
+				// set domain
+				ok := setTaskProfile(task, "doamin", domain)
+				if !ok {
+					ark.Fatal().Msg("Set domain failed")
+				}
 			} else {
 				cmd.Help()
 			}
 		},
 	}
 
-	c.Flags().StringVarP(&domain, "domain", "d", "", "set domains")
+	c.Flags().StringVarP(&domain, "domain", "d", "", "set domains, separated by commas")
 	c.Flags().StringVarP(&acmeuser, "user", "u", "", "set acme user")
 	c.Flags().BoolVar(&enabled, "enable", true, "enable task")
 	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
@@ -240,9 +245,9 @@ func cmdTaskSet() *cobra.Command {
 	c.Flags().StringVar(&dns_authkey, "authkey", "", "set dns auth key")
 	c.Flags().StringVar(&dns_authtoken, "authtoken", "", "set dns auth token")
 	c.Flags().StringVar(&dns_zonetoken, "zonetoken", "", "set dns zone token")
-	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", -1, "set dns record ttl, default 120")
-	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", -1, "set propagation timeout in seconds, default 60")
-	c.Flags().Int64Var(&dns_polling_interval, "interval", -1, "set polling interval in seconds, default 5")
+	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", 120, "set dns record ttl")
+	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", 60, "set propagation timeout in seconds")
+	c.Flags().Int64Var(&dns_polling_interval, "interval", 5, "set polling interval in seconds")
 	return c
 }
 
@@ -339,6 +344,11 @@ func addTaskProfile(task string) {
 	} else {
 		ark.Info().Msg("Task " + task + " added")
 	}
+}
+
+// set task profile
+func setTaskProfile(task, key, value string) bool {
+	return true
 }
 
 // Append domains in a task profile
