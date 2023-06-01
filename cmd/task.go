@@ -404,8 +404,19 @@ func setTaskProfile(task, key, value string) bool {
 		ark.Error().Err(err).Msg("Failed to read task profile")
 	}
 	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
+	profile := taskProfile{}
+	err = json.Unmarshal(profileContent, &profile)
+	if err != nil {
+		ark.Error().Err(err).Str("task", task).Msg("Failed to parse task profile")
+	}
 
 	// domain
+	switch key {
+	case "domain":
+		profile.Domain = []string{value}
+	default:
+		ark.Error().Msg("Failed to found ")
+	}
 
 	return true
 }
@@ -474,7 +485,7 @@ func appendDomainTaskProfile(task string, domains []string) {
 	profile := taskProfile{}
 	err = json.Unmarshal([]byte(profileContent), &profile)
 	if err != nil {
-		ark.Error().Err(err).Msg("Failed to parse task profile")
+		ark.Error().Err(err).Str("task", task).Msg("Failed to parse task profile")
 	}
 	profile.Domain = newDoamin
 	profileJson, _ := json.Marshal(profile)
