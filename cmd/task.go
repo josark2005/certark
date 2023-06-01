@@ -31,6 +31,21 @@ type taskProfile struct {
 	DNSPollingInterval    int64    `json:"dns_polling_interval"`    // in millisecond, 5 *1000 is recommanded
 }
 
+var DefaultTaskProfile = taskProfile{
+	TaskName:              "default",
+	Domain:                []string{},
+	AcmeUser:              "",
+	Enabled:               true,
+	DNSProvider:           "",
+	DNSAuthUser:           "",
+	DNSAuthKey:            "",
+	DNSAuthToken:          "",
+	DNSZoneToken:          "",
+	DNSTTL:                120,
+	DNSPropagationTimeout: 60,
+	DNSPollingInterval:    5,
+}
+
 // check if task profile exists
 func checkTaskProfileExists(taskname string) bool {
 	res := certark.FileOrDirExists(taskConfigDir + "/" + taskname)
@@ -91,7 +106,7 @@ func cmdTaskLs() *cobra.Command {
 		Short: "List task profiles",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			listTasks()
 		},
@@ -105,7 +120,7 @@ func cmdTaskShow() *cobra.Command {
 		Short: "Show a task profile",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if len(args) > 0 {
 				task := args[0]
@@ -124,7 +139,7 @@ func cmdTaskAdd() *cobra.Command {
 		Short: "Add a task profile",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if len(args) > 0 {
 				task := args[0]
@@ -145,7 +160,7 @@ func cmdTaskAppend() *cobra.Command {
 		Short: "Append domains in a task profile",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if len(args) > 1 {
 				task := args[0]
@@ -165,7 +180,7 @@ func cmdTaskSubtract() *cobra.Command {
 		Short: "Subtract a domain in a task profile",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if len(args) > 1 {
 				task := args[0]
@@ -186,7 +201,7 @@ func cmdTaskSetAcmeUser() *cobra.Command {
 		Short: "Set a acme user account in a task profile",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if len(args) > 1 {
 				task := args[0]
@@ -221,14 +236,16 @@ func cmdTaskSet() *cobra.Command {
 		Short: "Set config values in a task profile",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if len(args) == 1 {
 				task := args[0]
 				// set domain
-				ok := setTaskProfile(task, "doamin", domain)
-				if !ok {
-					ark.Fatal().Msg("Set domain failed")
+				if cmd.Flags().Lookup("domain").Changed {
+					ok := setTaskProfile(task, "domain", domain)
+					if !ok {
+						ark.Error().Msg("Set domain failed")
+					}
 				}
 			} else {
 				cmd.Help()
@@ -237,17 +254,17 @@ func cmdTaskSet() *cobra.Command {
 	}
 
 	c.Flags().StringVarP(&domain, "domain", "d", "", "set domains, separated by commas")
-	c.Flags().StringVarP(&acmeuser, "user", "u", "", "set acme user")
+	c.Flags().StringVarP(&acmeuser, "user", "u", DefaultTaskProfile.AcmeUser, "set acme user")
 	c.Flags().BoolVar(&enabled, "enable", true, "enable task")
 	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
-	c.Flags().StringVar(&dns_provider, "provider", "", "set dns provider")
-	c.Flags().StringVar(&dns_authuser, "authuser", "", "set dns auth user or email")
-	c.Flags().StringVar(&dns_authkey, "authkey", "", "set dns auth key")
-	c.Flags().StringVar(&dns_authtoken, "authtoken", "", "set dns auth token")
-	c.Flags().StringVar(&dns_zonetoken, "zonetoken", "", "set dns zone token")
-	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", 120, "set dns record ttl")
-	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", 60, "set propagation timeout in seconds")
-	c.Flags().Int64Var(&dns_polling_interval, "interval", 5, "set polling interval in seconds")
+	c.Flags().StringVar(&dns_provider, "provider", DefaultTaskProfile.DNSProvider, "set dns provider")
+	c.Flags().StringVar(&dns_authuser, "authuser", DefaultTaskProfile.DNSAuthUser, "set dns auth user or email")
+	c.Flags().StringVar(&dns_authkey, "authkey", DefaultTaskProfile.DNSAuthKey, "set dns auth key")
+	c.Flags().StringVar(&dns_authtoken, "authtoken", DefaultTaskProfile.DNSAuthToken, "set dns auth token")
+	c.Flags().StringVar(&dns_zonetoken, "zonetoken", DefaultTaskProfile.DNSZoneToken, "set dns zone token")
+	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", DefaultTaskProfile.DNSTTL, "set dns record ttl")
+	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", DefaultTaskProfile.DNSPropagationTimeout, "set propagation timeout in seconds")
+	c.Flags().Int64Var(&dns_polling_interval, "interval", DefaultTaskProfile.DNSPollingInterval, "set polling interval in seconds")
 	return c
 }
 
@@ -258,7 +275,7 @@ func cmdTaskRun() *cobra.Command {
 		Short: "Run a task",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
-				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
+				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if len(args) > 0 {
 				task := args[0]
@@ -329,12 +346,8 @@ func addTaskProfile(task string) {
 	}
 	defer fp.Close()
 
-	profile := taskProfile{
-		TaskName: task,
-		Domain:   []string{""},
-		AcmeUser: "",
-		Enabled:  true,
-	}
+	profile := DefaultTaskProfile
+	profile.TaskName = task
 	profileJson, _ := json.Marshal(profile)
 
 	// write profile to file
@@ -348,6 +361,52 @@ func addTaskProfile(task string) {
 
 // set task profile
 func setTaskProfile(task, key, value string) bool {
+	if !checkTaskProfileExists(task) {
+		err := errors.New("task does not existed")
+		ark.Error().Err(err).Msg("Failed to append domains to task profile")
+		return false
+	}
+
+	supportedKey := []string{
+		"domain",
+		"acme_user",
+		"enabled",
+		"dns_provider",
+		"dns_authuser",
+		"dns_authkey",
+		"dns_authtoken",
+		"dns_zonetoken",
+		"dns_ttl",
+		"dns_propagation_timeout",
+		"dns_polling_interval",
+	}
+
+	supportFlag := false
+	for _, sk := range supportedKey {
+		fmt.Println(sk)
+		fmt.Println(key)
+		if key == sk {
+			supportFlag = true
+			break
+		}
+	}
+	if !supportFlag {
+		err := errors.New("not supported key")
+		ark.Error().Str("key", key).Err(err).Msg("Failed to set task profile")
+		return false
+	}
+
+	ark.Info().Str("key", key).Str("value", value).Msg("Setting task profile")
+
+	// read profile
+	profileContent, err := os.ReadFile(taskConfigDir + "/" + task)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to read task profile")
+	}
+	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
+
+	// domain
+
 	return true
 }
 
@@ -412,12 +471,12 @@ func appendDomainTaskProfile(task string, domains []string) {
 		}
 	}
 
-	profile := taskProfile{
-		TaskName: gjson.Get(string(profileContent), "task_name").String(),
-		Domain:   newDoamin,
-		AcmeUser: gjson.Get(string(profileContent), "acme_user").String(),
-		Enabled:  gjson.Get(string(profileContent), "enabled").Bool(),
+	profile := taskProfile{}
+	err = json.Unmarshal([]byte(profileContent), &profile)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to parse task profile")
 	}
+	profile.Domain = newDoamin
 	profileJson, _ := json.Marshal(profile)
 
 	// write profile to file
