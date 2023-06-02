@@ -70,6 +70,7 @@ func RegisterAcmeUser(email string, mode int) string {
 	// set server
 	if mode == MODE_STAGING {
 		config.CADirURL = lego.LEDirectoryStaging
+		ark.Warn().Msg("Register user at staging ca dir")
 	} else {
 		config.CADirURL = lego.LEDirectoryProduction
 	}

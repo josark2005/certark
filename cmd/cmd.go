@@ -36,6 +36,7 @@ func Execute(version string) {
 	// select running mode
 	if version == "dev" {
 		tank.Save("MODE", tank.MODE_DEV)
+		ark.Debug().Msg("Running in developing mode")
 	} else {
 		tank.Save("MODE", tank.MODE_PROD)
 	}
