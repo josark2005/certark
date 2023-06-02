@@ -18,8 +18,6 @@ type TaskProfile struct {
 	UrlCheckEnable   bool   `json:"url_check_enable"`
 	UrlCheckTarget   string `json:"url_check_target"`
 	UrlCheckInterval int64  `json:"url_check_interval"` // in day, 1 is recommanded
-
-	Version int64 `json:"version"` // config version
 }
 
 var DefaultTaskProfile = TaskProfile{
