@@ -1,6 +1,9 @@
 package certark
 
-import "os"
+import (
+	"encoding/json"
+	"os"
+)
 
 func IsSystemd() bool {
 	if _, err := os.Stat("/run/systemd/system"); err == nil {
@@ -27,4 +30,14 @@ func IsDir(path string) bool {
 
 func IsFile(path string) bool {
 	return !IsDir(path)
+}
+
+func ReadFileAndParseJson(path string, v any) error {
+	// open and read file
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(content, v)
 }

@@ -14,8 +14,8 @@ const (
 	initLockFilePath  = serviceConfigDir + "/" + initLockFile
 	serviceConfigFile = "config.yml"
 	serviceConfigPath = serviceConfigDir + "/" + serviceConfigFile
-	domainConfigDir   = serviceConfigDir + "/domain"
 	taskConfigDir     = serviceConfigDir + "/task"
+	stateDir          = serviceConfigDir + "/state"
 	acmeUserDir       = serviceConfigDir + "/user"
 	certarkService    = "certark.service"
 )

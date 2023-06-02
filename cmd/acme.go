@@ -19,12 +19,6 @@ import (
 
 const reEmail = `^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$`
 
-type acmeUserProfile struct {
-	Email      string `json:"email"`
-	PrivateKey string `json:"privatekey"`
-	Enabled    bool   `json:"enabled"`
-}
-
 func checkEmail(email string) bool {
 	exp, _ := regexp.Compile(reEmail)
 	res := exp.Match([]byte(email))
@@ -268,7 +262,7 @@ func addAcmeUser(email string) {
 	}
 	defer fp.Close()
 
-	profile := acmeUserProfile{
+	profile := certark.AcmeUserProfile{
 		Email:      email,
 		PrivateKey: "",
 		Enabled:    true,
@@ -328,7 +322,7 @@ func setAcmeUserPirvateKeyInFile(email string, privateKeyPath string) {
 	}
 
 	// prepare profile data
-	profile := acmeUserProfile{
+	profile := certark.AcmeUserProfile{
 		Email:      email,
 		PrivateKey: string(bytes.Trim(privatekey, " \n")),
 		Enabled:    true,
@@ -374,7 +368,7 @@ func regAcmeUser(email string) {
 	}
 
 	// regenerate profile
-	newProfile := acmeUserProfile{
+	newProfile := certark.AcmeUserProfile{
 		Email:      gjson.Get(string(profile), "email").String(),
 		PrivateKey: privateKey,
 		Enabled:    gjson.Get(string(profile), "enabled").Bool(),
@@ -401,22 +395,22 @@ func regAcmeUser(email string) {
 }
 
 // get acme user profile
-func GetAcmeUserProfile(email string) (acmeUserProfile, error) {
+func GetAcmeUserProfile(email string) (certark.AcmeUserProfile, error) {
 	profile := acmeUserDir + "/" + email
 	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
 		err := errors.New("user " + email + " does not exist")
 		ark.Error().Err(err).Msg("Failed to find acme user")
-		return acmeUserProfile{}, err
+		return certark.AcmeUserProfile{}, err
 	}
 
 	// read file
 	profileContent, err := os.ReadFile(profile)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to read acme user profile")
-		return acmeUserProfile{}, err
+		return certark.AcmeUserProfile{}, err
 	}
 
-	acme := acmeUserProfile{
+	acme := certark.AcmeUserProfile{
 		Email:      gjson.Get(string(profileContent), "email").String(),
 		PrivateKey: gjson.Get(string(profileContent), "privatekey").String(),
 		Enabled:    gjson.Get(string(profileContent), "enabled").Bool(),

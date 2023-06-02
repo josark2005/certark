@@ -17,36 +17,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type taskProfile struct {
-	TaskName              string   `json:"task_name"`
-	Domain                []string `json:"domain"`
-	AcmeUser              string   `json:"acme_user"`
-	Enabled               bool     `json:"enabled"`
-	DNSProvider           string   `json:"dns_provider"`
-	DNSAuthUser           string   `json:"dns_authuser"`
-	DNSAuthKey            string   `json:"dns_authkey"`
-	DNSAuthToken          string   `json:"dns_authtoken"`
-	DNSZoneToken          string   `json:"dns_zonetoken"`
-	DNSTTL                int64    `json:"dns_ttl"`                 // ttl 120 is recommanded
-	DNSPropagationTimeout int64    `json:"dns_propagation_timeout"` // in millisecond, 60*1000 is recommanded
-	DNSPollingInterval    int64    `json:"dns_polling_interval"`    // in millisecond, 5 *1000 is recommanded
-}
-
-var DefaultTaskProfile = taskProfile{
-	TaskName:              "default",
-	Domain:                []string{},
-	AcmeUser:              "",
-	Enabled:               true,
-	DNSProvider:           "",
-	DNSAuthUser:           "",
-	DNSAuthKey:            "",
-	DNSAuthToken:          "",
-	DNSZoneToken:          "",
-	DNSTTL:                120,
-	DNSPropagationTimeout: 60,
-	DNSPollingInterval:    5,
-}
-
 // check if task profile exists
 func checkTaskProfileExists(taskname string) bool {
 	res := certark.FileOrDirExists(taskConfigDir + "/" + taskname)
@@ -230,6 +200,9 @@ func cmdTaskSet() *cobra.Command {
 		dns_ttl                 int64
 		dns_propagation_timeout int64
 		dns_polling_interval    int64
+		url_check_enable        bool
+		url_check_target        string
+		url_check_interval      int64
 	)
 
 	c := &cobra.Command{
@@ -336,6 +309,39 @@ func cmdTaskSet() *cobra.Command {
 						ark.Error().Msg("Set dns polling interval failed")
 					}
 				}
+
+				// set url check enable
+				if cmd.Flags().Lookup("url_check_enable").Changed {
+					ok := setTaskProfile(task, "url_check_enable", "true")
+					if !ok {
+						ark.Error().Msg("Enable url check failed")
+					}
+				}
+
+				// set url check disable
+				if cmd.Flags().Lookup("url_check_disable").Changed {
+					ok := setTaskProfile(task, "url_check_enable", "false")
+					if !ok {
+						ark.Error().Msg("Enable url check failed")
+					}
+				}
+
+				// set url check target
+				if cmd.Flags().Lookup("url_check_target").Changed {
+					ok := setTaskProfile(task, "url_check_target", dns_zonetoken)
+					if !ok {
+						ark.Error().Msg("Set url check target failed")
+					}
+				}
+
+				// set url check interval
+				if cmd.Flags().Lookup("url_check_interval").Changed {
+					ok := setTaskProfile(task, "url_check_interval", strconv.Itoa(int(url_check_interval)))
+					if !ok {
+						ark.Error().Msg("Set url check interval failed")
+					}
+				}
+
 			} else {
 				cmd.Help()
 			}
@@ -343,17 +349,23 @@ func cmdTaskSet() *cobra.Command {
 	}
 
 	c.Flags().StringVarP(&domain, "domain", "d", "", "set domains, separated by commas")
-	c.Flags().StringVarP(&acmeuser, "user", "u", DefaultTaskProfile.AcmeUser, "set acme user")
+	c.Flags().StringVarP(&acmeuser, "user", "u", certark.DefaultTaskProfile.AcmeUser, "set acme user")
 	c.Flags().BoolVar(&enabled, "enable", true, "enable task")
 	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
-	c.Flags().StringVar(&dns_provider, "provider", DefaultTaskProfile.DNSProvider, "set dns provider")
-	c.Flags().StringVar(&dns_authuser, "authuser", DefaultTaskProfile.DNSAuthUser, "set dns auth user or email")
-	c.Flags().StringVar(&dns_authkey, "authkey", DefaultTaskProfile.DNSAuthKey, "set dns auth key")
-	c.Flags().StringVar(&dns_authtoken, "authtoken", DefaultTaskProfile.DNSAuthToken, "set dns auth token")
-	c.Flags().StringVar(&dns_zonetoken, "zonetoken", DefaultTaskProfile.DNSZoneToken, "set dns zone token")
-	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", DefaultTaskProfile.DNSTTL, "set dns record ttl")
-	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", DefaultTaskProfile.DNSPropagationTimeout, "set propagation timeout in seconds")
-	c.Flags().Int64Var(&dns_polling_interval, "interval", DefaultTaskProfile.DNSPollingInterval, "set polling interval in seconds")
+
+	c.Flags().StringVar(&dns_provider, "provider", certark.DefaultTaskProfile.DNSProvider, "set dns provider")
+	c.Flags().StringVar(&dns_authuser, "authuser", certark.DefaultTaskProfile.DNSAuthUser, "set dns auth user or email")
+	c.Flags().StringVar(&dns_authkey, "authkey", certark.DefaultTaskProfile.DNSAuthKey, "set dns auth key")
+	c.Flags().StringVar(&dns_authtoken, "authtoken", certark.DefaultTaskProfile.DNSAuthToken, "set dns auth token")
+	c.Flags().StringVar(&dns_zonetoken, "zonetoken", certark.DefaultTaskProfile.DNSZoneToken, "set dns zone token")
+	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", certark.DefaultTaskProfile.DNSTTL, "set dns record ttl")
+	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", certark.DefaultTaskProfile.DNSPropagationTimeout, "set propagation timeout in seconds")
+	c.Flags().Int64Var(&dns_polling_interval, "interval", certark.DefaultTaskProfile.DNSPollingInterval, "set polling interval in seconds")
+
+	c.Flags().BoolVar(&url_check_enable, "url_check_enable", true, "enable url check")
+	c.Flags().BoolVar(&url_check_enable, "url_check_disable", false, "disable url check")
+	c.Flags().StringVar(&url_check_target, "url_check_target", certark.DefaultTaskProfile.UrlCheckTarget, "set url check target")
+	c.Flags().Int64Var(&url_check_interval, "url_check_interval", certark.DefaultTaskProfile.UrlCheckInterval, "set url check interval in days")
 	return c
 }
 
@@ -435,7 +447,7 @@ func addTaskProfile(task string) {
 	}
 	defer fp.Close()
 
-	profile := DefaultTaskProfile
+	profile := certark.DefaultTaskProfile
 	profile.TaskName = task
 	profileJson, _ := json.Marshal(profile)
 
@@ -468,6 +480,9 @@ func setTaskProfile(task, key, value string) bool {
 		"dns_ttl",
 		"dns_propagation_timeout",
 		"dns_polling_interval",
+		"url_check_enable",
+		"url_check_target",
+		"url_check_interval",
 	}
 
 	supportFlag := false
@@ -491,13 +506,12 @@ func setTaskProfile(task, key, value string) bool {
 		ark.Error().Err(err).Msg("Failed to read task profile")
 	}
 	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
-	profile := taskProfile{}
+	profile := certark.TaskProfile{}
 	err = json.Unmarshal(profileContent, &profile)
 	if err != nil {
 		ark.Error().Err(err).Str("task", task).Msg("Failed to parse task profile")
 	}
 
-	// domain
 	switch key {
 	case "domain":
 		profile.Domain = []string{value}
@@ -537,6 +551,20 @@ func setTaskProfile(task, key, value string) bool {
 			ark.Error().Err(e).Msg("Set dns polling interval failed")
 		}
 		profile.DNSPollingInterval = int64(v)
+	case "url_check_enable":
+		if value == "true" {
+			profile.UrlCheckEnable = true
+		} else {
+			profile.UrlCheckEnable = false
+		}
+	case "url_check_target":
+		profile.UrlCheckTarget = value
+	case "url_check_interval":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			ark.Error().Err(e).Msg("Set dns propagation timeout failed")
+		}
+		profile.UrlCheckInterval = int64(v)
 	default:
 		ark.Error().Msg("Failed to found a valid configuration key")
 	}
@@ -620,7 +648,7 @@ func appendDomainTaskProfile(task string, domains []string) {
 		}
 	}
 
-	profile := taskProfile{}
+	profile := certark.TaskProfile{}
 	err = json.Unmarshal([]byte(profileContent), &profile)
 	if err != nil {
 		ark.Error().Err(err).Str("task", task).Msg("Failed to parse task profile")
@@ -676,7 +704,7 @@ func subtractDomainTaskProfile(task string, domain string) {
 		}
 	}
 
-	profile := taskProfile{
+	profile := certark.TaskProfile{
 		TaskName: gjson.Get(string(profileContent), "task_name").String(),
 		Domain:   newDoamin,
 		AcmeUser: gjson.Get(string(profileContent), "acme_user").String(),
@@ -729,7 +757,7 @@ func setAcmeUserTaskProfile(task string, acme string) {
 		}
 	}
 
-	profile := taskProfile{
+	profile := certark.TaskProfile{
 		TaskName: gjson.Get(string(profileContent), "task_name").String(),
 		Domain:   origDoamin,
 		AcmeUser: acme,
@@ -793,6 +821,7 @@ func runTask(task string) {
 		panic(err)
 	}
 
+	//TODO - Run task
 	fmt.Println(client)
 
 }

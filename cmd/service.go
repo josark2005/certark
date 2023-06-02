@@ -104,19 +104,19 @@ func (r *InitRunCondition) Run() (bool, error) {
 		}
 	}
 
-	// check domainConfigDir
+	// check stateDir
 	if r.ShowLog {
-		ark.Info().Str("path", domainConfigDir).Msg("Checking domain directory")
+		ark.Info().Str("path", stateDir).Msg("Checking state directory")
 	}
-	if !certark.FileOrDirExists(domainConfigDir) {
+	if !certark.FileOrDirExists(stateDir) {
 		if !r.CheckMode {
-			err := os.MkdirAll(domainConfigDir, os.ModePerm)
+			err := os.MkdirAll(stateDir, os.ModePerm)
 			if err != nil {
 				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
 			}
 		} else {
-			return false, errors.New(domainConfigDir + " not found")
+			return false, errors.New(stateDir + " not found")
 		}
 	}
 
