@@ -11,6 +11,7 @@ import (
 var Confdir string
 var Tasks = map[string]TaskProfile{}
 var AcmeUsers = map[string]AcmeUserProfile{}
+var States = map[string]StateProfile{}
 
 // standalone mode entry
 func Standalone(confDir string) {
@@ -38,12 +39,16 @@ func Reload() {
 func Load(dir string) {
 	taskDir := Confdir + "/task"
 	acmeDir := Confdir + "/user"
+	stateDir := Confdir + "/state"
 
 	// load tasks
 	Tasks = loadTasks(taskDir)
 
 	// load acme users
 	AcmeUsers = loadAcmeUsers(acmeDir)
+
+	// load states
+	States = loadStates(stateDir)
 }
 
 // load tasks
@@ -128,4 +133,43 @@ func loadAcmeUsers(acmeDir string) map[string]AcmeUserProfile {
 		}
 	}
 	return aus
+}
+
+// load states
+func loadStates(stateDir string) map[string]StateProfile {
+	stateFiles := []string{}
+	if !IsDir(stateDir) {
+		err := errors.New("state directory not found")
+		ark.Error().Err(err).Str("dir", stateDir).Msg("Failed ot load states")
+	} else {
+		err := filepath.Walk(stateDir, func(path string, info os.FileInfo, err error) error {
+			if path == stateDir || info.IsDir() {
+				return nil
+			}
+			stateFiles = append(stateFiles, path)
+			return nil
+		})
+		if err != nil {
+			ark.Error().Err(err).Msg("Failed to load states")
+		}
+	}
+
+	if len(stateFiles) == 0 {
+		return map[string]StateProfile{}
+	}
+
+	s := map[string]StateProfile{}
+	// read task Files
+	for _, path := range stateFiles {
+		state := StateProfile{}
+		err := ReadFileAndParseJson(path, &state)
+		if err != nil {
+			ark.Warn().Err(err).Str("task", path[len(stateDir)-1:]).Msg("State skipped")
+		} else {
+			s[state.TaskName] = state
+			ark.Debug().Str("task", state.TaskName).Msg("State loaded")
+
+		}
+	}
+	return s
 }

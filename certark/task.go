@@ -38,5 +38,4 @@ var DefaultTaskProfile = TaskProfile{
 	UrlCheckEnable:        false,
 	UrlCheckTarget:        "",
 	UrlCheckInterval:      1,
-	Version:               1,
 }
