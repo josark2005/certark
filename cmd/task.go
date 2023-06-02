@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/lego"
@@ -247,6 +248,94 @@ func cmdTaskSet() *cobra.Command {
 						ark.Error().Msg("Set domain failed")
 					}
 				}
+
+				// set acme user
+				if cmd.Flags().Lookup("user").Changed {
+					ok := setTaskProfile(task, "acme_user", domain)
+					if !ok {
+						ark.Error().Msg("Set acme user failed")
+					}
+				}
+
+				// set task enable
+				if cmd.Flags().Lookup("enable").Changed {
+					ok := setTaskProfile(task, "enable", "true")
+					if !ok {
+						ark.Error().Msg("Enable task failed")
+					}
+				}
+
+				// set task disable
+				if cmd.Flags().Lookup("disable").Changed {
+					ok := setTaskProfile(task, "enable", "false")
+					if !ok {
+						ark.Error().Msg("Enable task failed")
+					}
+				}
+
+				// set dns provider
+				if cmd.Flags().Lookup("provider").Changed {
+					ok := setTaskProfile(task, "dns_provider", dns_provider)
+					if !ok {
+						ark.Error().Msg("Set dns provider failed")
+					}
+				}
+
+				// set dns auth user
+				if cmd.Flags().Lookup("authuser").Changed {
+					ok := setTaskProfile(task, "dns_authuser", dns_authuser)
+					if !ok {
+						ark.Error().Msg("Set dns auth user failed")
+					}
+				}
+
+				// set dns auth key
+				if cmd.Flags().Lookup("authkey").Changed {
+					ok := setTaskProfile(task, "dns_authkey", dns_authkey)
+					if !ok {
+						ark.Error().Msg("Set dns authkey failed")
+					}
+				}
+
+				// set dns auth token
+				if cmd.Flags().Lookup("authtoken").Changed {
+					ok := setTaskProfile(task, "dns_authtoken", dns_authtoken)
+					if !ok {
+						ark.Error().Msg("Set dns authtoken failed")
+					}
+				}
+
+				// set dns zone token
+				if cmd.Flags().Lookup("zonetoken").Changed {
+					ok := setTaskProfile(task, "dns_zonetoken", dns_zonetoken)
+					if !ok {
+						ark.Error().Msg("Set dns zonetoken failed")
+					}
+				}
+
+				// set dns ttl
+				if cmd.Flags().Lookup("ttl").Changed {
+					ok := setTaskProfile(task, "dns_ttl", strconv.Itoa(int(dns_ttl)))
+					if !ok {
+						ark.Error().Msg("Set dns ttl failed")
+					}
+				}
+
+				// set dns propagation timeout
+				if cmd.Flags().Lookup("propagation").Changed {
+					ok := setTaskProfile(task, "dns_propagation_timeout", strconv.Itoa(int(dns_propagation_timeout)))
+					if !ok {
+						ark.Error().Msg("Set dns propagation timeout failed")
+					}
+				}
+
+				// set dns polling interval
+				if cmd.Flags().Lookup("propagation").Changed {
+					ok := setTaskProfile(task, "dns_polling_interval", strconv.Itoa(int(dns_polling_interval)))
+					if !ok {
+						ark.Error().Msg("Set dns polling interval failed")
+					}
+				}
 			} else {
 				cmd.Help()
 			}
@@ -383,15 +472,13 @@ func setTaskProfile(task, key, value string) bool {
 
 	supportFlag := false
 	for _, sk := range supportedKey {
-		fmt.Println(sk)
-		fmt.Println(key)
 		if key == sk {
 			supportFlag = true
 			break
 		}
 	}
 	if !supportFlag {
-		err := errors.New("not supported key")
+		err := errors.New("not supported configuration key")
 		ark.Error().Str("key", key).Err(err).Msg("Failed to set task profile")
 		return false
 	}
@@ -414,8 +501,59 @@ func setTaskProfile(task, key, value string) bool {
 	switch key {
 	case "domain":
 		profile.Domain = []string{value}
+	case "acme_user":
+		profile.AcmeUser = value
+	case "enable":
+		if value == "true" {
+			profile.Enabled = true
+		} else {
+			profile.Enabled = false
+		}
+	case "dns_provider":
+		profile.DNSProvider = value
+	case "dns_authuser":
+		profile.AcmeUser = value
+	case "dns_authkey":
+		profile.DNSAuthKey = value
+	case "dns_authtoken":
+		profile.DNSAuthToken = value
+	case "dns_zonetoken":
+		profile.DNSZoneToken = value
+	case "dns_ttl":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			ark.Error().Err(e).Msg("Set dns ttl failed")
+		}
+		profile.DNSTTL = int64(v)
+	case "dns_propagation_timeout":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			ark.Error().Err(e).Msg("Set dns propagation timeout failed")
+		}
+		profile.DNSPropagationTimeout = int64(v)
+	case "dns_polling_interval":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			ark.Error().Err(e).Msg("Set dns polling interval failed")
+		}
+		profile.DNSPollingInterval = int64(v)
 	default:
-		ark.Error().Msg("Failed to found ")
+		ark.Error().Msg("Failed to found a valid configuration key")
+	}
+
+	// write profile to file
+	profileJson, _ := json.Marshal(profile)
+	fp, err := os.OpenFile(taskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to open task profile")
+		return false
+	}
+	defer fp.Close()
+	_, err = fp.WriteString(string(profileJson))
+	if err != nil {
+		ark.Error().Msg("Failed to change task " + task)
+	} else {
+		ark.Info().Msg("Task " + task + " changed")
 	}
 
 	return true
