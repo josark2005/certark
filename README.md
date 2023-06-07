@@ -12,13 +12,13 @@ An initialization is required before running CertArk at the first time.
 sudo certark init
 ```
 
-> Initialization process will create a `.lock` file in configuration directory, the init process WON'T execute if the lock file exists. The `-f` flag can ignore the limitation.
+Initialization process will create a `.lock` file in configuration directory, the init process WON'T execute if the lock file exists. The `-f` flag can ignore the limitation.
 
 ```bash
 sudo certark init -f
 ```
 
-> Or remove the `.lock` file. A `--yes-i-really-mean-it` flag is required to comfirm.
+Or remove the `.lock` file. A `--yes-i-really-mean-it` flag is required to comfirm.
 
 ```bash
 sudo certark init unlock --yes-i-really-mean-it
@@ -27,7 +27,7 @@ sudo certark init unlock --yes-i-really-mean-it
 > Notice: Before you execute the initialization process or remove the lock file, backup your configurations.
 
 
-### Manage ACME account(user)
+### Manage ACME account (user)
 
 ACME account is required by the Let's Encrypt orgnization.
 
