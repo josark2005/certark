@@ -10,7 +10,9 @@ import (
 
 var Confdir string
 var Tasks = map[string]TaskProfile{}
+var TaskNotValid = map[string]TaskProfile{}
 var AcmeUsers = map[string]AcmeUserProfile{}
+var AcmeUsersNotValid = map[string]AcmeUserProfile{}
 var States = map[string]StateProfile{}
 
 // standalone mode entry
@@ -49,6 +51,10 @@ func Load(dir string) {
 
 	// load states
 	States = loadStates(stateDir)
+
+	// check validity
+	checkAcmeUserValidity()
+	checkTaskValidity()
 }
 
 // load tasks
@@ -140,7 +146,7 @@ func loadStates(stateDir string) map[string]StateProfile {
 	stateFiles := []string{}
 	if !IsDir(stateDir) {
 		err := errors.New("state directory not found")
-		ark.Error().Err(err).Str("dir", stateDir).Msg("Failed ot load states")
+		ark.Error().Err(err).Str("dir", stateDir).Msg("Failed to load states")
 	} else {
 		err := filepath.Walk(stateDir, func(path string, info os.FileInfo, err error) error {
 			if path == stateDir || info.IsDir() {
