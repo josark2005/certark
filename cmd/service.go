@@ -23,7 +23,7 @@ func init() {
 			}).Run()
 		},
 	}
-	initCmd.Flags().BoolVarP(&force_init_flag, "force", "f", false, "force initialize")
+	initCmd.Flags().BoolVarP(&force_init_flag, "force", "", false, "force initialize")
 
 	var remove_confirm_flag = false
 	var initLockRemoveCmd = &cobra.Command{
@@ -31,7 +31,7 @@ func init() {
 		Short: "Remove init lock file",
 		Run: func(cmd *cobra.Command, args []string) {
 			// check comfirm flag
-			if remove_confirm_flag {
+			if cmd.Flags().Lookup("yes-i-really-mean-it").Changed {
 				// remove lock file
 				removeLockfile()
 			} else {
