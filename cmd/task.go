@@ -471,7 +471,7 @@ func setTaskProfile(task, key, value string) bool {
 	supportedKey := []string{
 		"domain",
 		"acme_user",
-		"enabled",
+		"enable",
 		"dns_provider",
 		"dns_authuser",
 		"dns_authkey",
