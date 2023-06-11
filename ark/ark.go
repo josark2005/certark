@@ -7,9 +7,20 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	PanicLevel = zerolog.PanicLevel
+	FatalLevel = zerolog.FatalLevel
+	ErrorLevel = zerolog.ErrorLevel
+	WarnLevel  = zerolog.WarnLevel
+	InfoLevel  = zerolog.InfoLevel
+	DebugLevel = zerolog.DebugLevel
+	TraceLevel = zerolog.TraceLevel
+)
+
 func init() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	SetLevel(DebugLevel)
 }
 
 func Panic() *zerolog.Event {
@@ -38,4 +49,8 @@ func Debug() *zerolog.Event {
 
 func Trace() *zerolog.Event {
 	return log.Trace()
+}
+
+func SetLevel(level zerolog.Level) {
+	zerolog.SetGlobalLevel(level)
 }

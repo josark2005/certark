@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/jokin1999/certark/ark"
+	"github.com/jokin1999/certark/certark"
 	"github.com/jokin1999/certark/tank"
 	"github.com/spf13/cobra"
 )
@@ -20,13 +21,17 @@ const (
 	certarkService    = "certark.service"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "certark",
-	Short: "CertArk is a certificate requestor based on lego.",
-	Run: func(cmd *cobra.Command, args []string) {
-		// show help information
-		cmd.Help()
-	},
+var rootCmd = &cobra.Command{}
+
+func init() {
+	rootCmd = &cobra.Command{
+		Use:   "certark",
+		Short: "CertArk is a certificate requestor based on lego.",
+		Run: func(cmd *cobra.Command, args []string) {
+			// show help information
+			cmd.Help()
+		},
+	}
 }
 
 func Execute(version string) {
@@ -35,10 +40,11 @@ func Execute(version string) {
 
 	// select running mode
 	if version == "dev" {
-		tank.Save("MODE", tank.MODE_DEV)
 		ark.Debug().Msg("Running in developing mode")
+		tank.Save("MODE", certark.MODE_DEV)
 	} else {
-		tank.Save("MODE", tank.MODE_PROD)
+		ark.Debug().Msg("Running in product mode")
+		tank.Save("MODE", certark.MODE_PROD)
 	}
 
 	if err := rootCmd.Execute(); err != nil {

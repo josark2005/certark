@@ -18,13 +18,17 @@ type TaskProfile struct {
 	UrlCheckEnable   bool   `json:"url_check_enable"`
 	UrlCheckTarget   string `json:"url_check_target"`
 	UrlCheckInterval int64  `json:"url_check_interval"` // in day, 1 is recommanded
+
+	CertExportPath        string `json:"cert_export_path"`         // export cert after cert updating
+	PostCertUpdateCommand string `json:"post_cert_update_command"` // command runs after cert udpating
 }
 
 var DefaultTaskProfile = TaskProfile{
-	TaskName:              "default",
-	Domain:                []string{},
-	AcmeUser:              "",
-	Enabled:               true,
+	TaskName: "default",
+	Domain:   []string{},
+	AcmeUser: "",
+	Enabled:  true,
+
 	DNSProvider:           "",
 	DNSAuthUser:           "",
 	DNSAuthKey:            "",
@@ -33,7 +37,11 @@ var DefaultTaskProfile = TaskProfile{
 	DNSTTL:                120,
 	DNSPropagationTimeout: 60,
 	DNSPollingInterval:    5,
-	UrlCheckEnable:        false,
-	UrlCheckTarget:        "",
-	UrlCheckInterval:      1,
+
+	UrlCheckEnable:   false,
+	UrlCheckTarget:   "",
+	UrlCheckInterval: 1,
+
+	CertExportPath:        "",
+	PostCertUpdateCommand: "",
 }

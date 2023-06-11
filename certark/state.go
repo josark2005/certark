@@ -2,7 +2,7 @@ package certark
 
 type StateProfile struct {
 	TaskName   string   `json:"task_name"`
-	Request    string   `json:"request"`
+	RequestDir string   `json:"request_dir"`
 	Cert       string   `json:"cert"`
 	Priv       string   `json:"priv"`
 	Domain     []string `json:"domain"`

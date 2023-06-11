@@ -12,7 +12,6 @@ import (
 	"github.com/jokin1999/certark/acme"
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
-	"github.com/jokin1999/certark/tank"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
 )
@@ -361,7 +360,7 @@ func regAcmeUser(email string) {
 	// register acme user
 	acmeUsername := email
 	privateKey := ""
-	if m, _ := tank.Load("MODE"); m == tank.MODE_PROD {
+	if certark.CurrentConfig.Mode == certark.MODE_PROD {
 		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_PRODUCTION)
 	} else {
 		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_STAGING)

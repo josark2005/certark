@@ -20,6 +20,7 @@ func Standalone(confDir string) {
 	ark.Debug().Str("dir", confDir).Msg("Running in standalone mode")
 	Confdir = confDir
 	Load(Confdir)
+	checkCertsValidation()
 }
 
 // server mode entry
@@ -178,4 +179,9 @@ func loadStates(stateDir string) map[string]StateProfile {
 		}
 	}
 	return s
+}
+
+// check certs validation
+func checkCertsValidation() {
+
 }

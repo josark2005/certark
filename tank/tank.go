@@ -6,11 +6,6 @@ import (
 	"github.com/jokin1999/certark/ark"
 )
 
-const (
-	MODE_DEV  = "dev"
-	MODE_PROD = "prod"
-)
-
 var Config = make(map[string]string)
 
 func init() {
@@ -29,8 +24,4 @@ func Load(key string) (string, error) {
 		return "", err
 	}
 	return value, nil
-}
-
-func IsDevMode() bool {
-	return Config["MODE"] == "dev"
 }
