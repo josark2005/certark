@@ -5,7 +5,6 @@ import (
 
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
-	"github.com/jokin1999/certark/tank"
 	"github.com/spf13/cobra"
 )
 
@@ -32,6 +31,13 @@ func init() {
 			cmd.Help()
 		},
 	}
+
+	// load config
+	config, err := ReadConfig()
+	if err != nil {
+		ark.Warn().Err(err).Msg("Load CertArk config failed, may fallback to default")
+	}
+	certark.CurrentConfig = config
 }
 
 func Execute(version string) {
@@ -39,12 +45,12 @@ func Execute(version string) {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	// select running mode
-	if version == "dev" {
+	if certark.CurrentConfig.Mode == "dev" {
 		ark.Debug().Msg("Running in developing mode")
-		tank.Save("MODE", certark.MODE_DEV)
+		certark.CurrentConfig.Mode = certark.MODE_DEV
 	} else {
 		ark.Debug().Msg("Running in product mode")
-		tank.Save("MODE", certark.MODE_PROD)
+		certark.CurrentConfig.Mode = certark.MODE_PROD
 	}
 
 	if err := rootCmd.Execute(); err != nil {
