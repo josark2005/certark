@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
@@ -85,6 +86,7 @@ func ReadConfig() (certark.Config, error) {
 // config set
 func cmdConfigSet() *cobra.Command {
 	var mode string
+	var port int64
 
 	c := &cobra.Command{
 		Use:   "set",
@@ -94,13 +96,19 @@ func cmdConfigSet() *cobra.Command {
 				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			// mode
-			if cmd.Flags().Lookup("mode").Changed {
+			if cmd.Flags().Lookup("mode").Changed && mode != "keep" {
 				setConfig("mode", mode)
+			}
+
+			// port
+			if cmd.Flags().Lookup("port").Changed && port != 0 {
+				setConfig("port", strconv.Itoa(int(port)))
 			}
 		},
 	}
 
 	c.Flags().StringVarP(&mode, "mode", "m", "keep", "Set CertArk running mode")
+	c.Flags().Int64VarP(&port, "port", "p", 0, "Set CertArk running mode")
 
 	return c
 }
@@ -110,6 +118,7 @@ func setConfig(option string, value string) bool {
 	var supportFlag = false
 	var supportedOption = []string{
 		"mode",
+		"port",
 	}
 
 	for _, v := range supportedOption {
@@ -149,6 +158,13 @@ func setConfig(option string, value string) bool {
 			ark.Warn().Str("opt", option).Str("val", value).Msg("Unsupported config value")
 			return false
 		}
+	case "port":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			ark.Error().Err(err).Msg("Invalid port number")
+			return false
+		}
+		config.Port = int64(v)
 	}
 
 	// write back
