@@ -45,12 +45,12 @@ func Execute(version string) {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	// select running mode
-	if certark.CurrentConfig.Mode == "dev" {
-		ark.Debug().Msg("Running in developing mode")
-		certark.CurrentConfig.Mode = certark.MODE_DEV
-	} else {
+	if certark.CurrentConfig.Mode == "prod" {
 		ark.Debug().Msg("Running in product mode")
 		certark.CurrentConfig.Mode = certark.MODE_PROD
+	} else {
+		ark.Debug().Msg("Running in developing mode")
+		certark.CurrentConfig.Mode = certark.MODE_DEV
 	}
 
 	if err := rootCmd.Execute(); err != nil {

@@ -73,7 +73,7 @@ func ReadConfig() (certark.Config, error) {
 	// read file
 	profileContent, err := os.ReadFile(configFile)
 	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read config file")
+		ark.Warn().Err(err).Msg("Failed to read config file")
 		return certark.Config{}, err
 	}
 
