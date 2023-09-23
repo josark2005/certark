@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -12,6 +13,36 @@ import (
 )
 
 func init() {
+	force_init_flag := false
+
+	// init command
+	var initCmd = &cobra.Command{
+		Use:   "init",
+		Short: "Initialize CertArk",
+		Run: func(cmd *cobra.Command, args []string) {
+			(&InitRunCondition{
+				ForceInit: force_init_flag,
+			}).Run()
+		},
+	}
+	initCmd.Flags().BoolVarP(&force_init_flag, "force", "", false, "force initialize")
+
+	var remove_confirm_flag = false
+	var initLockRemoveCmd = &cobra.Command{
+		Use:   "unlock",
+		Short: "Remove init lock file",
+		Run: func(cmd *cobra.Command, args []string) {
+			// check comfirm flag
+			if cmd.Flags().Lookup("yes-i-really-mean-it").Changed {
+				// remove lock file
+				removeLockfile()
+			} else {
+				ark.Warn().Msg("A comfirm flag is required, add --yes-i-really-mean-it flag at the end of the command")
+			}
+		},
+	}
+	initLockRemoveCmd.Flags().BoolVarP(&remove_confirm_flag, "yes-i-really-mean-it", "", false, "comfirm to remove init lock")
+
 	// config main command
 	var configCmd = cmdConfig()
 
@@ -24,7 +55,156 @@ func init() {
 	// config current
 	configCmd.AddCommand(cmdConfigCurrent())
 
+	initCmd.AddCommand(initLockRemoveCmd)
+	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(configCmd)
+}
+
+type InitRunCondition struct {
+	CheckMode bool
+	ShowLog   bool
+	ForceInit bool
+}
+
+func (r *InitRunCondition) Run() (bool, error) {
+	// check if directory is lock
+	if r.ShowLog {
+		ark.Info().Str("path", certark.InitLockFilePath).Msg("Checking lock file")
+	}
+
+	if r.ForceInit {
+		ark.Warn().Msg("Force initializing")
+	}
+
+	if certark.FileOrDirExists(certark.InitLockFilePath) && !r.CheckMode && !r.ForceInit {
+		err := errors.New("config directory is locked")
+		ark.Error().Err(err).Msg("Init condition check failed")
+		return false, err
+	}
+
+	// check serviceConfigDir
+	if r.ShowLog {
+		ark.Info().Str("path", certark.ServiceConfigDir).Msg("Checking config directory")
+	}
+	if !certark.FileOrDirExists(certark.ServiceConfigDir) {
+		if !r.CheckMode {
+			err := os.MkdirAll(certark.ServiceConfigDir, os.ModePerm)
+			if err != nil {
+				ark.Error().Err(err).Msg("Run condition init failed")
+				return false, err
+			}
+		} else {
+			return false, errors.New(certark.ServiceConfigDir + " not found")
+		}
+	}
+
+	// check serviceConfigPath
+	if r.ShowLog {
+		ark.Info().Str("path", certark.ServiceConfigPath).Msg("Checking service config file")
+	}
+	if !certark.FileOrDirExists(certark.ServiceConfigPath) {
+		if !r.CheckMode {
+			file, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_CREATE, os.ModeExclusive)
+			if err != nil {
+				ark.Error().Err(err).Msg("Run condition init failed")
+				return false, err
+			}
+			file.WriteString("")
+		} else {
+			return false, errors.New(certark.ServiceConfigPath + " not found")
+		}
+	}
+
+	// check stateDir
+	if r.ShowLog {
+		ark.Info().Str("path", certark.StateDir).Msg("Checking state directory")
+	}
+	if !certark.FileOrDirExists(certark.StateDir) {
+		if !r.CheckMode {
+			err := os.MkdirAll(certark.StateDir, os.ModePerm)
+			if err != nil {
+				ark.Error().Err(err).Msg("Run condition init failed")
+				return false, err
+			}
+		} else {
+			return false, errors.New(certark.StateDir + " not found")
+		}
+	}
+
+	// check taskConfigDir
+	if r.ShowLog {
+		ark.Info().Str("path", certark.TaskConfigDir).Msg("Checking task directory")
+	}
+	if !certark.FileOrDirExists(certark.TaskConfigDir) {
+		if !r.CheckMode {
+			err := os.MkdirAll(certark.TaskConfigDir, os.ModePerm)
+			if err != nil {
+				ark.Error().Err(err).Msg("Run condition init failed")
+				return false, err
+			}
+		} else {
+			return false, errors.New(certark.TaskConfigDir + " not found")
+		}
+	}
+
+	// check acmeUserDir
+	if r.ShowLog {
+		ark.Info().Str("path", certark.AcmeUserDir).Msg("Checking acme user directory")
+	}
+	if !certark.FileOrDirExists(certark.AcmeUserDir) {
+		if !r.CheckMode {
+			err := os.MkdirAll(certark.AcmeUserDir, os.ModePerm)
+			if err != nil {
+				ark.Error().Err(err).Msg("Run condition init failed")
+				return false, err
+			}
+		} else {
+			return false, errors.New(certark.AcmeUserDir + " not found")
+		}
+	}
+
+	// write lock file
+	if !r.CheckMode {
+		ark.Info().Str("path", certark.InitLockFilePath).Msg("Writing lock file")
+		fp, err := os.OpenFile(certark.InitLockFilePath, os.O_CREATE, os.ModeExclusive)
+		if err != nil {
+			ark.Error().Err(err).Msg("Run condition init failed")
+		}
+		defer fp.Close()
+
+		ark.Info().Msg("Initialization success")
+	}
+
+	return true, nil
+}
+
+func CheckRunCondition() bool {
+	r, _ := (&InitRunCondition{CheckMode: true, ShowLog: false}).Run()
+	return r
+}
+
+func CheckRunConditionWithLog() bool {
+	r, _ := (&InitRunCondition{CheckMode: true, ShowLog: true}).Run()
+	return r
+}
+
+func removeLockfile() (bool, error) {
+	// check if lock file exists
+	if !certark.FileOrDirExists(certark.InitLockFilePath) {
+		ark.Warn().Str("file", certark.InitLockFilePath).Msg("Lock file does not exist")
+		return false, errors.New("lock file does not exist")
+	}
+
+	ark.Info().Str("file", certark.InitLockFilePath).Msg("Removing lock file")
+
+	err := os.Remove(certark.InitLockFilePath)
+	if err != nil {
+		ark.Error().Err(err).Msg("Remove lock file failed")
+		return false, err
+	}
+
+	ark.Info().Str("file", certark.InitLockFilePath).Msg("Lock file removed")
+	return true, nil
 }
 
 // config command
@@ -54,7 +234,7 @@ func cmdConfigShow() *cobra.Command {
 
 // show config
 func showConfig() {
-	configFile := serviceConfigPath
+	configFile := certark.ServiceConfigPath
 
 	// read file
 	profileContent, err := os.ReadFile(configFile)
@@ -64,23 +244,6 @@ func showConfig() {
 	}
 
 	fmt.Println(string(profileContent))
-}
-
-// read config
-func ReadConfig() (certark.Config, error) {
-	configFile := serviceConfigPath
-
-	// read file
-	profileContent, err := os.ReadFile(configFile)
-	if err != nil {
-		ark.Warn().Err(err).Msg("Failed to read config file")
-		return certark.Config{}, err
-	}
-
-	// parse
-	config := certark.Config{}
-	err = yaml.Unmarshal(profileContent, &config)
-	return config, err
 }
 
 // config set
@@ -107,7 +270,7 @@ func cmdConfigSet() *cobra.Command {
 		},
 	}
 
-	c.Flags().StringVarP(&mode, "mode", "m", "keep", "Set CertArk running mode")
+	c.Flags().StringVarP(&mode, "mode", "m", "keep", "Set CertArk running mode: prod, dev")
 	c.Flags().Int64VarP(&port, "port", "p", 0, "Set CertArk running mode")
 
 	return c
@@ -134,7 +297,7 @@ func setConfig(option string, value string) bool {
 	}
 
 	// read config
-	configFile := serviceConfigPath
+	configFile := certark.ServiceConfigPath
 	profileContent, err := os.ReadFile(configFile)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to read config file")
@@ -152,7 +315,7 @@ func setConfig(option string, value string) bool {
 	// change config
 	switch option {
 	case "mode":
-		if value == "dev" || value == "prod" {
+		if value == certark.MODE_DEV || value == certark.MODE_PROD {
 			config.Mode = value
 		} else {
 			ark.Warn().Str("opt", option).Str("val", value).Msg("Unsupported config value")

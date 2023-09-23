@@ -31,7 +31,7 @@ func checkEmail(email string) bool {
 
 // check if acme user exists
 func checkUserExists(email string) bool {
-	res := certark.FileOrDirExists(acmeUserDir + "/" + email)
+	res := certark.FileOrDirExists(certark.AcmeUserDir + "/" + email)
 	if res {
 		ark.Debug().Msg("Acme user exists")
 	} else {
@@ -203,14 +203,14 @@ func cmdAcmeSet() *cobra.Command {
 
 // list acme users
 func listAcmeUsers() {
-	err := filepath.Walk(acmeUserDir, func(path string, info os.FileInfo, err error) error {
-		if path == acmeUserDir {
+	err := filepath.Walk(certark.AcmeUserDir, func(path string, info os.FileInfo, err error) error {
+		if path == certark.AcmeUserDir {
 			return nil
 		}
 		if info.IsDir() {
 			return nil
 		}
-		fmt.Println(path[len(acmeUserDir)+1:])
+		fmt.Println(path[len(certark.AcmeUserDir)+1:])
 		return nil
 	})
 	if err != nil {
@@ -221,7 +221,7 @@ func listAcmeUsers() {
 
 // show acme user
 func showAcmeUser(email string) {
-	profile := acmeUserDir + "/" + email
+	profile := certark.AcmeUserDir + "/" + email
 	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
 		err := errors.New("user " + email + " does not exist")
 		ark.Error().Err(err).Msg("Failed to show acme user")
@@ -254,7 +254,7 @@ func addAcmeUser(email string) {
 	}
 
 	// create profile
-	fp, err := os.OpenFile(acmeUserDir+"/"+email, os.O_CREATE|os.O_WRONLY, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+email, os.O_CREATE|os.O_WRONLY, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to create user profile")
 		return
@@ -287,7 +287,7 @@ func rmAcmeUser(email string) {
 	}
 
 	// remove profile
-	err := os.Remove(acmeUserDir + "/" + email)
+	err := os.Remove(certark.AcmeUserDir + "/" + email)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to remove user profile")
 		return
@@ -306,7 +306,7 @@ func setAcmeUserPirvateKeyInFile(email string, privateKeyPath string) {
 	}
 
 	// set acme user profile
-	fp, err := os.OpenFile(acmeUserDir+"/"+email, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+email, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to set user profile")
 		return
@@ -347,7 +347,7 @@ func regAcmeUser(email string) {
 		return
 	}
 
-	profilePath := acmeUserDir + "/" + email
+	profilePath := certark.AcmeUserDir + "/" + email
 
 	// read acme user profile
 	profile, err := os.ReadFile(profilePath)
@@ -395,7 +395,7 @@ func regAcmeUser(email string) {
 
 // get acme user profile
 func GetAcmeUserProfile(email string) (certark.AcmeUserProfile, error) {
-	profile := acmeUserDir + "/" + email
+	profile := certark.AcmeUserDir + "/" + email
 	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
 		err := errors.New("user " + email + " does not exist")
 		ark.Error().Err(err).Msg("Failed to find acme user")

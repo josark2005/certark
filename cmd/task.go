@@ -19,7 +19,7 @@ import (
 
 // check if task profile exists
 func checkTaskProfileExists(taskname string) bool {
-	res := certark.FileOrDirExists(taskConfigDir + "/" + taskname)
+	res := certark.FileOrDirExists(certark.TaskConfigDir + "/" + taskname)
 	if res {
 		ark.Debug().Msg("Task profile exists")
 	} else {
@@ -390,14 +390,14 @@ func cmdTaskRun() *cobra.Command {
 
 // list task profiles
 func listTasks() {
-	err := filepath.Walk(taskConfigDir, func(path string, info os.FileInfo, err error) error {
-		if path == taskConfigDir {
+	err := filepath.Walk(certark.TaskConfigDir, func(path string, info os.FileInfo, err error) error {
+		if path == certark.TaskConfigDir {
 			return nil
 		}
 		if info.IsDir() {
 			return nil
 		}
-		fmt.Println(path[len(taskConfigDir)+1:])
+		fmt.Println(path[len(certark.TaskConfigDir)+1:])
 		return nil
 	})
 	if err != nil {
@@ -408,7 +408,7 @@ func listTasks() {
 
 // show task profile
 func showTaskProfile(task string) {
-	profile := taskConfigDir + "/" + task
+	profile := certark.TaskConfigDir + "/" + task
 	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
 		err := errors.New("task " + task + " does not exist")
 		ark.Error().Err(err).Msg("Failed to show acme user")
@@ -440,7 +440,7 @@ func addTaskProfile(task string) {
 	}
 
 	// create profile
-	fp, err := os.OpenFile(taskConfigDir+"/"+task, os.O_CREATE|os.O_WRONLY, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_CREATE|os.O_WRONLY, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to create task profile")
 		return
@@ -501,7 +501,7 @@ func setTaskProfile(task, key, value string) bool {
 	ark.Info().Str("key", key).Str("value", value).Msg("Setting task profile")
 
 	// read profile
-	profileContent, err := os.ReadFile(taskConfigDir + "/" + task)
+	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to read task profile")
 	}
@@ -571,7 +571,7 @@ func setTaskProfile(task, key, value string) bool {
 
 	// write profile to file
 	profileJson, _ := json.Marshal(profile)
-	fp, err := os.OpenFile(taskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open task profile")
 		return false
@@ -596,7 +596,7 @@ func appendDomainTaskProfile(task string, domains []string) {
 	}
 
 	// read profile
-	profileContent, err := os.ReadFile(taskConfigDir + "/" + task)
+	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to read task profile")
 		return
@@ -657,7 +657,7 @@ func appendDomainTaskProfile(task string, domains []string) {
 	profileJson, _ := json.Marshal(profile)
 
 	// write profile to file
-	fp, err := os.OpenFile(taskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open task profile")
 		return
@@ -680,7 +680,7 @@ func subtractDomainTaskProfile(task string, domain string) {
 	}
 
 	// read profile
-	profileContent, err := os.ReadFile(taskConfigDir + "/" + task)
+	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to read task profile")
 		return
@@ -713,7 +713,7 @@ func subtractDomainTaskProfile(task string, domain string) {
 	profileJson, _ := json.Marshal(profile)
 
 	// write profile to file
-	fp, err := os.OpenFile(taskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open task profile")
 		return
@@ -743,7 +743,7 @@ func setAcmeUserTaskProfile(task string, acme string) {
 	}
 
 	// read profile
-	profileContent, err := os.ReadFile(taskConfigDir + "/" + task)
+	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to read task profile")
 		return
@@ -766,7 +766,7 @@ func setAcmeUserTaskProfile(task string, acme string) {
 	profileJson, _ := json.Marshal(profile)
 
 	// write profile to file
-	fp, err := os.OpenFile(taskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open task profile")
 		return
@@ -789,7 +789,7 @@ func runTask(task string) {
 	}
 
 	// read profile
-	profileContent, err := os.ReadFile(taskConfigDir + "/" + task)
+	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to run task")
 		return

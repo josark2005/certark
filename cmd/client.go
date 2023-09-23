@@ -19,7 +19,7 @@ func init() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if cmd.Flags().Lookup("standalone").Changed && local {
-				certark.Standalone(serviceConfigDir)
+				certark.Standalone(certark.ServiceConfigDir)
 			}
 		},
 	}

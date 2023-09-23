@@ -1,8 +1,27 @@
 package certark
 
+import (
+	"os"
+
+	"github.com/jokin1999/certark/ark"
+	"gopkg.in/yaml.v3"
+)
+
 const (
 	MODE_DEV  = "dev"
 	MODE_PROD = "prod"
+)
+
+const (
+	ServiceConfigDir  = "/etc/certark"
+	InitLockFile      = ".lock"
+	InitLockFilePath  = ServiceConfigDir + "/" + InitLockFile
+	ServiceConfigFile = "config.yml"
+	ServiceConfigPath = ServiceConfigDir + "/" + ServiceConfigFile
+	TaskConfigDir     = ServiceConfigDir + "/task"
+	StateDir          = ServiceConfigDir + "/state"
+	AcmeUserDir       = ServiceConfigDir + "/user"
+	CertarkService    = "certark.service"
 )
 
 type Config struct {
@@ -11,8 +30,34 @@ type Config struct {
 }
 
 var DefaultConfig = Config{
-	Mode: "dev",
+	Mode: MODE_DEV,
 	Port: 7701,
 }
 
 var CurrentConfig = Config{}
+
+// read config
+func ReadConfig() (Config, error) {
+	configFile := ServiceConfigPath
+
+	// read file
+	profileContent, err := os.ReadFile(configFile)
+	if err != nil {
+		ark.Warn().Err(err).Msg("Failed to read config file")
+		return Config{}, err
+	}
+
+	// parse
+	config := Config{}
+	err = yaml.Unmarshal(profileContent, &config)
+	return config, err
+}
+
+// load config
+func LoadConfig() {
+	config, err := ReadConfig()
+	if err != nil {
+		ark.Warn().Err(err).Msg("Load CertArk config failed, may fallback to default")
+	}
+	CurrentConfig = config
+}
