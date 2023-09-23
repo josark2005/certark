@@ -7,6 +7,8 @@ import (
 )
 
 func init() {
+	certark.LoadConfig()
+
 	// CertArk server link
 	var serverLink = ""
 	var local = false

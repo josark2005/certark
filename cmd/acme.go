@@ -41,6 +41,8 @@ func checkUserExists(email string) bool {
 }
 
 func init() {
+	certark.LoadConfig()
+
 	// acme main command
 	var acmeCmd = cmdAcme()
 

@@ -251,7 +251,6 @@ func cmdConfigShow() *cobra.Command {
 			if !CheckRunCondition() {
 				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
-			certark.LoadConfig()
 			showConfig()
 		},
 	}
