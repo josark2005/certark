@@ -131,7 +131,9 @@ func (r *InitRunCondition) Run() (bool, error) {
 				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
 			}
-			file.WriteString("")
+			// fetch default config
+			profileYaml, _ := yaml.Marshal(certark.DefaultConfig)
+			file.WriteString(string(profileYaml))
 		} else {
 			return false, errors.New(certark.ServiceConfigPath + " not found")
 		}
@@ -249,6 +251,7 @@ func cmdConfigShow() *cobra.Command {
 			if !CheckRunCondition() {
 				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
 			}
+			certark.LoadConfig()
 			showConfig()
 		},
 	}
@@ -293,7 +296,7 @@ func cmdConfigSet() *cobra.Command {
 	}
 
 	c.Flags().StringVarP(&mode, "mode", "m", "keep", "Set CertArk running mode: prod, dev")
-	c.Flags().Int64VarP(&port, "port", "p", 0, "Set CertArk running mode")
+	c.Flags().Int64VarP(&port, "port", "p", 0, "Set CertArk running port (server)")
 
 	return c
 }
@@ -319,14 +322,7 @@ func setConfig(option string, value string) bool {
 	}
 
 	// read config
-	configFile := certark.ServiceConfigPath
-	profileContent, err := os.ReadFile(configFile)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read config file")
-		return false
-	}
-	config := certark.Config{}
-	err = yaml.Unmarshal(profileContent, &config)
+	config, err := certark.ReadConfig()
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to parse config file")
 		return false
@@ -355,7 +351,7 @@ func setConfig(option string, value string) bool {
 	// write back
 	profileYaml, _ := yaml.Marshal(config)
 	fmt.Println(string(profileYaml))
-	fp, err := os.OpenFile(configFile, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open config file")
 		return false
@@ -371,12 +367,13 @@ func setConfig(option string, value string) bool {
 	return true
 }
 
-// config cu
+// config current
 func cmdConfigCurrent() *cobra.Command {
 	return &cobra.Command{
 		Use:   "current",
 		Short: "Show current CertArk configuration (current running)",
 		Run: func(cmd *cobra.Command, args []string) {
+			certark.LoadConfig()
 			showCurrentConfig()
 		},
 	}
