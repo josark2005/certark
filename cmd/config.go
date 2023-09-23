@@ -25,7 +25,7 @@ func init() {
 	// add init cmd to root
 	rootCmd.AddCommand(initCmd)
 
-	// config main command
+	// config command
 	var configCmd = cmdConfig()
 
 	// config show
@@ -78,8 +78,13 @@ func cmdInitUnlock() *cobra.Command {
 }
 
 type InitRunCondition struct {
+	// In check mode, files will not be changed.
 	CheckMode bool
-	ShowLog   bool
+
+	// show logs
+	ShowLog bool
+
+	// force initializing flag
 	ForceInit bool
 }
 
