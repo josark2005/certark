@@ -13,9 +13,37 @@ import (
 )
 
 func init() {
-	force_init_flag := false
-
 	// init command
+	var initCmd = cmdInit()
+
+	// init unlock command
+	var initLockRemoveCmd = cmdInitUnlock()
+
+	// add init unlock command to init command
+	initCmd.AddCommand(initLockRemoveCmd)
+
+	// add init cmd to root
+	rootCmd.AddCommand(initCmd)
+
+	// config main command
+	var configCmd = cmdConfig()
+
+	// config show
+	configCmd.AddCommand(cmdConfigShow())
+
+	// config set
+	configCmd.AddCommand(cmdConfigSet())
+
+	// config current
+	configCmd.AddCommand(cmdConfigCurrent())
+
+	// add config command to root
+	rootCmd.AddCommand(configCmd)
+}
+
+// init command
+func cmdInit() *cobra.Command {
+	force_init_flag := false
 	var initCmd = &cobra.Command{
 		Use:   "init",
 		Short: "Initialize CertArk",
@@ -26,7 +54,11 @@ func init() {
 		},
 	}
 	initCmd.Flags().BoolVarP(&force_init_flag, "force", "", false, "force initialize")
+	return initCmd
+}
 
+// init unlock command
+func cmdInitUnlock() *cobra.Command {
 	var remove_confirm_flag = false
 	var initLockRemoveCmd = &cobra.Command{
 		Use:   "unlock",
@@ -42,22 +74,7 @@ func init() {
 		},
 	}
 	initLockRemoveCmd.Flags().BoolVarP(&remove_confirm_flag, "yes-i-really-mean-it", "", false, "comfirm to remove init lock")
-
-	// config main command
-	var configCmd = cmdConfig()
-
-	// config show
-	configCmd.AddCommand(cmdConfigShow())
-
-	// config set
-	configCmd.AddCommand(cmdConfigSet())
-
-	// config current
-	configCmd.AddCommand(cmdConfigCurrent())
-
-	initCmd.AddCommand(initLockRemoveCmd)
-	rootCmd.AddCommand(initCmd)
-	rootCmd.AddCommand(configCmd)
+	return initLockRemoveCmd
 }
 
 type InitRunCondition struct {
