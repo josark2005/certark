@@ -100,6 +100,8 @@ Different dns providers require distinctive API authentication element(s). DNS p
 
 ### Cloudflare
 
-- API_Email, API_Key (dns_authmail, dns_authkey)
-- DNS_API_TOKEN (dns_authtoken)
-- DNS_API_TOKEN, ZONE_API_TOKEN (dns_authtoken, dns_zonetoken)
+- API_Email (dns_authmail)
+- API_Token (dns_authtoken)
+- Permission required: 
+  - `Zone / Zone / Read`
+  - `Zone / DNS / Edit`
