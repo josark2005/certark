@@ -126,7 +126,7 @@ func (r *InitRunCondition) Run() (bool, error) {
 	}
 	if !certark.FileOrDirExists(certark.ServiceConfigPath) {
 		if !r.CheckMode {
-			file, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_CREATE, os.ModeExclusive)
+			file, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_CREATE, 0660)
 			if err != nil {
 				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
@@ -190,7 +190,7 @@ func (r *InitRunCondition) Run() (bool, error) {
 	// write lock file
 	if !r.CheckMode {
 		ark.Info().Str("path", certark.InitLockFilePath).Msg("Writing lock file")
-		fp, err := os.OpenFile(certark.InitLockFilePath, os.O_CREATE, os.ModeExclusive)
+		fp, err := os.OpenFile(certark.InitLockFilePath, os.O_CREATE, 0444)
 		if err != nil {
 			ark.Error().Err(err).Msg("Run condition init failed")
 		}
@@ -350,7 +350,7 @@ func setConfig(option string, value string) bool {
 	// write back
 	profileYaml, _ := yaml.Marshal(config)
 	ark.Debug().Msg(string(profileYaml))
-	fp, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_TRUNC, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open config file")
 		return false

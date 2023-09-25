@@ -440,7 +440,7 @@ func addTaskProfile(task string) {
 	}
 
 	// create profile
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_CREATE|os.O_WRONLY, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_CREATE|os.O_WRONLY, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to create task profile")
 		return
@@ -571,7 +571,7 @@ func setTaskProfile(task, key, value string) bool {
 
 	// write profile to file
 	profileJson, _ := json.Marshal(profile)
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open task profile")
 		return false
@@ -657,7 +657,7 @@ func appendDomainTaskProfile(task string, domains []string) {
 	profileJson, _ := json.Marshal(profile)
 
 	// write profile to file
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open task profile")
 		return
@@ -713,7 +713,7 @@ func subtractDomainTaskProfile(task string, domain string) {
 	profileJson, _ := json.Marshal(profile)
 
 	// write profile to file
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open task profile")
 		return
@@ -766,7 +766,7 @@ func setAcmeUserTaskProfile(task string, acme string) {
 	profileJson, _ := json.Marshal(profile)
 
 	// write profile to file
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open task profile")
 		return

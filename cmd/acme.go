@@ -255,7 +255,7 @@ func addAcmeUser(email string) {
 	}
 
 	// create profile
-	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+email, os.O_CREATE|os.O_WRONLY, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+email, os.O_CREATE|os.O_WRONLY, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to create user profile")
 		return
@@ -307,7 +307,7 @@ func setAcmeUserPirvateKeyInFile(email string, privateKeyPath string) {
 	}
 
 	// set acme user profile
-	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+email, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+email, os.O_WRONLY|os.O_TRUNC, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to set user profile")
 		return
@@ -375,7 +375,7 @@ func regAcmeUser(email string) {
 	}
 
 	// write acme user profile
-	fp, err := os.OpenFile(profilePath, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
+	fp, err := os.OpenFile(profilePath, os.O_WRONLY|os.O_TRUNC, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open acme user profile")
 		return
