@@ -12,7 +12,7 @@ const (
 	MODE_PROD = "prod"
 )
 
-const (
+var (
 	ServiceConfigDir  = "/etc/certark"
 	InitLockFile      = ".lock"
 	InitLockFilePath  = ServiceConfigDir + "/" + InitLockFile
