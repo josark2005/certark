@@ -12,10 +12,10 @@ An initialization is required before running CertArk at the first time.
 sudo certark init
 ```
 
-Initialization process will create a `.lock` file in configuration directory, the init process WON'T execute if the lock file exists. The `-f` flag can ignore the limitation.
+Initialization process will create a `.lock` file in configuration directory, the init process WON'T execute if the lock file exists. The `--force` flag can ignore the limitation.
 
 ```bash
-sudo certark init -f
+sudo certark init --force
 ```
 
 Or remove the `.lock` file. A `--yes-i-really-mean-it` flag is required to comfirm.
@@ -84,7 +84,9 @@ sudo certark task set [TASK_NAME] -u [ACME_ACCOUNT_EMAIL]
 Standalone mode means a single-node mode which including the request->download->deploy process.
 
 ```bash
-sudo certark client -a
+sudo certark server -a
+# or
+sudo certark server --standalone
 ```
 
 A deploy command should be specified in task profile. See details in [Automatic](#automatic-deploy)
