@@ -8,18 +8,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{}
-
-func init() {
-	rootCmd = &cobra.Command{
-		Use:   "certark",
-		Short: "CertArk is a certificate requestor based on lego.",
-		Run: func(cmd *cobra.Command, args []string) {
-			// show help information
-			cmd.Help()
-			println(args)
-		},
-	}
+var rootCmd = &cobra.Command{
+	Use:   "certark",
+	Short: "CertArk is a certificate requestor based on lego.",
+	Run: func(cmd *cobra.Command, args []string) {
+		// show help information
+		cmd.Help()
+	},
 }
 
 func Execute(version string) {

@@ -67,13 +67,14 @@ func init() {
 
 // acme command
 func cmdAcme() *cobra.Command {
-	return &cobra.Command{
+	var acme = &cobra.Command{
 		Use:   "acme",
 		Short: "ACME configurations",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
 	}
+	return acme
 }
 
 // acme ls
