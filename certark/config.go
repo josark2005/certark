@@ -63,5 +63,7 @@ func LoadConfig(slient bool) {
 			ark.Warn().Err(err).Msg("Load CertArk config failed, may fallback to default")
 		}
 	}
+
+	// push config to stack
 	CurrentConfig = config
 }
