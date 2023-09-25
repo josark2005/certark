@@ -4,9 +4,17 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 )
 
-type DNSProvider interface {
+type ProviderDriver interface {
 	NewDnsProviderConfig() (challenge.Provider, error)
-	ReadConfFromJson(string) *CloudflareDriver
+	ReadConfFromJson(string)
 }
 
-var Driver map[string]DNSProvider = make(map[string]DNSProvider)
+type DriverConstruct func() ProviderDriver
+
+var driverMap map[string]DriverConstruct = make(map[string]DriverConstruct)
+
+func RegisterDriver(driverName string, driver DriverConstruct) {
+	driverMap[driverName] = driver
+}
+
+//TODO -

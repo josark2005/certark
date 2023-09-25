@@ -821,6 +821,10 @@ func runTask(task string) {
 		panic(err)
 	}
 
-	//TODO - Run task
-	fmt.Println(client)
+	println(client)
+
+	//TODO -
+	// new provider
+	// provider_name := gjson.Get(profile, "dns_provider").String()
+
 }
