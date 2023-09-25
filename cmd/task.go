@@ -224,7 +224,7 @@ func cmdTaskSet() *cobra.Command {
 
 				// set acme user
 				if cmd.Flags().Lookup("user").Changed {
-					ok := setTaskProfile(task, "acme_user", domain)
+					ok := setTaskProfile(task, "acme_user", acmeuser)
 					if !ok {
 						ark.Error().Msg("Set acme user failed")
 					}
@@ -526,7 +526,7 @@ func setTaskProfile(task, key, value string) bool {
 	case "dns_provider":
 		profile.DNSProvider = value
 	case "dns_authuser":
-		profile.AcmeUser = value
+		profile.DNSAuthUser = value
 	case "dns_authkey":
 		profile.DNSAuthKey = value
 	case "dns_authtoken":
@@ -823,5 +823,4 @@ func runTask(task string) {
 
 	//TODO - Run task
 	fmt.Println(client)
-
 }
