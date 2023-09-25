@@ -32,7 +32,7 @@ sudo certark init unlock --yes-i-really-mean-it
 ACME account is required by the Let's Encrypt orgnization.
 
 ```bash
-sudo cerark acme add [ACME_ACCOUNT_EMAIL]
+sudo certark acme add [ACME_ACCOUNT_EMAIL]
 ```
 
 Then, register the account.
