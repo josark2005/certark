@@ -28,7 +28,6 @@ func Execute(version string) {
 
 	// select running mode
 	if certark.CurrentConfig.Mode == "prod" {
-		ark.Debug().Msg("Running in product mode")
 		certark.CurrentConfig.Mode = certark.MODE_PROD
 	} else {
 		ark.Debug().Msg("Running in developing mode")
