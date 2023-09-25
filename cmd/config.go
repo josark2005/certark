@@ -349,7 +349,7 @@ func setConfig(option string, value string) bool {
 
 	// write back
 	profileYaml, _ := yaml.Marshal(config)
-	fmt.Println(string(profileYaml))
+	ark.Debug().Msg(string(profileYaml))
 	fp, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_TRUNC, os.ModeExclusive)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to open config file")
