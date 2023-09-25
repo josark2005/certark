@@ -37,13 +37,15 @@ var DefaultConfig = Config{
 var CurrentConfig = Config{}
 
 // read config
-func ReadConfig() (Config, error) {
+func ReadConfig(slient bool) (Config, error) {
 	configFile := ServiceConfigPath
 
 	// read file
 	profileContent, err := os.ReadFile(configFile)
 	if err != nil {
-		ark.Warn().Err(err).Msg("Failed to read config file")
+		if !slient {
+			ark.Warn().Err(err).Msg("Failed to read config file")
+		}
 		return Config{}, err
 	}
 
@@ -54,10 +56,12 @@ func ReadConfig() (Config, error) {
 }
 
 // load config
-func LoadConfig() {
-	config, err := ReadConfig()
+func LoadConfig(slient bool) {
+	config, err := ReadConfig(slient)
 	if err != nil {
-		ark.Warn().Err(err).Msg("Load CertArk config failed, may fallback to default")
+		if !slient {
+			ark.Warn().Err(err).Msg("Load CertArk config failed, may fallback to default")
+		}
 	}
 	CurrentConfig = config
 }

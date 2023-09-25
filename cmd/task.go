@@ -29,8 +29,6 @@ func checkTaskProfileExists(taskname string) bool {
 }
 
 func init() {
-	certark.LoadConfig()
-
 	// task main command
 	var taskCmd = cmdTask()
 

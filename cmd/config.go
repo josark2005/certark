@@ -321,7 +321,7 @@ func setConfig(option string, value string) bool {
 	}
 
 	// read config
-	config, err := certark.ReadConfig()
+	config, err := certark.ReadConfig(false)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to parse config file")
 		return false
@@ -372,7 +372,7 @@ func cmdConfigCurrent() *cobra.Command {
 		Use:   "current",
 		Short: "Show current CertArk configuration (current running)",
 		Run: func(cmd *cobra.Command, args []string) {
-			certark.LoadConfig()
+			certark.LoadConfig(false)
 			showCurrentConfig()
 		},
 	}
