@@ -69,7 +69,7 @@ func init() {
 func cmdAcme() *cobra.Command {
 	var acme = &cobra.Command{
 		Use:   "acme",
-		Short: "ACME configurations",
+		Short: "ACME profiles management",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
@@ -256,7 +256,7 @@ func addAcmeUser(name string, email string) {
 	}
 
 	// create profile
-	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+name, os.O_CREATE|os.O_WRONLY, 0660)
+	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to create user profile")
 		return
