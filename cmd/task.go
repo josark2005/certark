@@ -443,7 +443,7 @@ func setTaskProfile(task, key, value string) bool {
 		"url_check_interval",
 	}
 
-	supportFlag := false
+	supportFlag := false // if key/option is supported, supportFlag will set to true
 	for _, sk := range supportedKey {
 		if key == sk {
 			supportFlag = true
