@@ -17,4 +17,10 @@ func RegisterDriver(driverName string, driver DriverConstruct) {
 	driverMap[driverName] = driver
 }
 
-//TODO -
+// check acme driver exists
+func IsDriverExists(driver string) bool {
+	if _, ok := driverMap[driver]; ok {
+		return true
+	}
+	return false
+}
