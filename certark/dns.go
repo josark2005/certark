@@ -3,9 +3,18 @@ package certark
 type DNSProfile struct {
 	Enabled bool `json:"enabled"`
 
-	DNSProvider  string `json:"dns_provider"`
-	DNSAuthUser  string `json:"dns_authuser"`
-	DNSAuthKey   string `json:"dns_authkey"`
-	DNSAuthToken string `json:"dns_authtoken"`
-	DNSZoneToken string `json:"dns_zonetoken"`
+	Provider     string `json:"provider"`
+	Account      string `json:"account"`
+	APIKey       string `json:"api_key"`
+	DNSAPIToken  string `json:"dns_api_key"`
+	ZoneAPIToken string `json:"zone_api_token"`
+}
+
+var DefaultDNSUserProfile = DNSProfile{
+	Enabled:      true,
+	Provider:     "",
+	Account:      "",
+	APIKey:       "",
+	DNSAPIToken:  "",
+	ZoneAPIToken: "",
 }
