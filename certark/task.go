@@ -6,11 +6,7 @@ type TaskProfile struct {
 	AcmeUser string   `json:"acme_user"`
 	Enabled  bool     `json:"enabled"`
 
-	DNSProvider           string `json:"dns_provider"`
-	DNSAuthUser           string `json:"dns_authuser"`
-	DNSAuthKey            string `json:"dns_authkey"`
-	DNSAuthToken          string `json:"dns_authtoken"`
-	DNSZoneToken          string `json:"dns_zonetoken"`
+	DNSProfile            string `json:"dns_profile"`
 	DNSTTL                int64  `json:"dns_ttl"`                 // ttl 120 is recommanded
 	DNSPropagationTimeout int64  `json:"dns_propagation_timeout"` // in millisecond, 60*1000 is recommanded
 	DNSPollingInterval    int64  `json:"dns_polling_interval"`    // in millisecond, 5 *1000 is recommanded
@@ -29,11 +25,7 @@ var DefaultTaskProfile = TaskProfile{
 	AcmeUser: "",
 	Enabled:  true,
 
-	DNSProvider:           "",
-	DNSAuthUser:           "",
-	DNSAuthKey:            "",
-	DNSAuthToken:          "",
-	DNSZoneToken:          "",
+	DNSProfile:            "",
 	DNSTTL:                120,
 	DNSPropagationTimeout: 60,
 	DNSPollingInterval:    5,

@@ -56,6 +56,8 @@ func init() {
 	// task run
 	taskCmd.AddCommand(cmdTaskRun())
 
+	//TODO - Delete task
+
 	rootCmd.AddCommand(taskCmd)
 }
 
@@ -192,11 +194,7 @@ func cmdTaskSet() *cobra.Command {
 		domain                  string
 		acmeuser                string
 		enabled                 bool
-		dns_provider            string
-		dns_authuser            string
-		dns_authkey             string
-		dns_authtoken           string
-		dns_zonetoken           string
+		dns_profile             string
 		dns_ttl                 int64
 		dns_propagation_timeout int64
 		dns_polling_interval    int64
@@ -246,43 +244,11 @@ func cmdTaskSet() *cobra.Command {
 					}
 				}
 
-				// set dns provider
-				if cmd.Flags().Lookup("provider").Changed {
-					ok := setTaskProfile(task, "dns_provider", dns_provider)
+				// set dns profile
+				if cmd.Flags().Lookup("profile").Changed {
+					ok := setTaskProfile(task, "dns_profile", dns_profile)
 					if !ok {
-						ark.Error().Msg("Set dns provider failed")
-					}
-				}
-
-				// set dns auth user
-				if cmd.Flags().Lookup("authuser").Changed {
-					ok := setTaskProfile(task, "dns_authuser", dns_authuser)
-					if !ok {
-						ark.Error().Msg("Set dns auth user failed")
-					}
-				}
-
-				// set dns auth key
-				if cmd.Flags().Lookup("authkey").Changed {
-					ok := setTaskProfile(task, "dns_authkey", dns_authkey)
-					if !ok {
-						ark.Error().Msg("Set dns authkey failed")
-					}
-				}
-
-				// set dns auth token
-				if cmd.Flags().Lookup("authtoken").Changed {
-					ok := setTaskProfile(task, "dns_authtoken", dns_authtoken)
-					if !ok {
-						ark.Error().Msg("Set dns authtoken failed")
-					}
-				}
-
-				// set dns zone token
-				if cmd.Flags().Lookup("zonetoken").Changed {
-					ok := setTaskProfile(task, "dns_zonetoken", dns_zonetoken)
-					if !ok {
-						ark.Error().Msg("Set dns zonetoken failed")
+						ark.Error().Msg("Set dns profile failed")
 					}
 				}
 
@@ -328,7 +294,7 @@ func cmdTaskSet() *cobra.Command {
 
 				// set url check target
 				if cmd.Flags().Lookup("url_check_target").Changed {
-					ok := setTaskProfile(task, "url_check_target", dns_zonetoken)
+					ok := setTaskProfile(task, "url_check_target", url_check_target)
 					if !ok {
 						ark.Error().Msg("Set url check target failed")
 					}
@@ -353,11 +319,7 @@ func cmdTaskSet() *cobra.Command {
 	c.Flags().BoolVar(&enabled, "enable", true, "enable task")
 	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
 
-	c.Flags().StringVar(&dns_provider, "provider", certark.DefaultTaskProfile.DNSProvider, "set dns provider")
-	c.Flags().StringVar(&dns_authuser, "authuser", certark.DefaultTaskProfile.DNSAuthUser, "set dns auth user or email")
-	c.Flags().StringVar(&dns_authkey, "authkey", certark.DefaultTaskProfile.DNSAuthKey, "set dns auth key")
-	c.Flags().StringVar(&dns_authtoken, "authtoken", certark.DefaultTaskProfile.DNSAuthToken, "set dns auth token")
-	c.Flags().StringVar(&dns_zonetoken, "zonetoken", certark.DefaultTaskProfile.DNSZoneToken, "set dns zone token")
+	c.Flags().StringVar(&dns_profile, "provider", certark.DefaultTaskProfile.DNSProfile, "set dns provider")
 	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", certark.DefaultTaskProfile.DNSTTL, "set dns record ttl")
 	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", certark.DefaultTaskProfile.DNSPropagationTimeout, "set propagation timeout in seconds")
 	c.Flags().Int64Var(&dns_polling_interval, "interval", certark.DefaultTaskProfile.DNSPollingInterval, "set polling interval in seconds")
@@ -472,11 +434,7 @@ func setTaskProfile(task, key, value string) bool {
 		"domain",
 		"acme_user",
 		"enable",
-		"dns_provider",
-		"dns_authuser",
-		"dns_authkey",
-		"dns_authtoken",
-		"dns_zonetoken",
+		"dns_profile",
 		"dns_ttl",
 		"dns_propagation_timeout",
 		"dns_polling_interval",
@@ -523,16 +481,8 @@ func setTaskProfile(task, key, value string) bool {
 		} else {
 			profile.Enabled = false
 		}
-	case "dns_provider":
-		profile.DNSProvider = value
-	case "dns_authuser":
-		profile.DNSAuthUser = value
-	case "dns_authkey":
-		profile.DNSAuthKey = value
-	case "dns_authtoken":
-		profile.DNSAuthToken = value
-	case "dns_zonetoken":
-		profile.DNSZoneToken = value
+	case "dns_profile":
+		profile.DNSProfile = value
 	case "dns_ttl":
 		v, e := strconv.Atoi(value)
 		if e != nil {
