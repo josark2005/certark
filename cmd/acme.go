@@ -30,8 +30,8 @@ func checkEmail(email string) bool {
 }
 
 // check if acme user exists
-func checkUserExists(email string) bool {
-	res := certark.FileOrDirExists(certark.AcmeUserDir + "/" + email)
+func checkUserExists(name string) bool {
+	res := certark.FileOrDirExists(certark.AcmeUserDir + "/" + name)
 	if res {
 		ark.Debug().Msg("Acme user exists")
 	} else {
@@ -132,19 +132,20 @@ func cmdAcmeReg() *cobra.Command {
 // acme add command
 func cmdAcmeAdd() *cobra.Command {
 	c := &cobra.Command{
-		Use:   "add [EMAIL]",
+		Use:   "add [ACME_USER_NAME] [EMAIL]",
 		Short: "Add an ACME user",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
 			}
 			if len(args) > 0 {
-				acmeEmail := args[0]
+				acmeName := args[0]
+				acmeEmail := args[1]
 				if !checkEmail(acmeEmail) {
 					ark.Warn().Msg("Unsupported email format")
 				} else {
 					// add acme user
-					addAcmeUser(acmeEmail)
+					addAcmeUser(acmeName, acmeEmail)
 				}
 			} else {
 				cmd.Help()
@@ -246,8 +247,8 @@ func showAcmeUser(email string) {
 }
 
 // add acme user
-func addAcmeUser(email string) {
-	if checkUserExists(email) {
+func addAcmeUser(name string, email string) {
+	if checkUserExists(name) {
 		// user exists
 		err := errors.New("user existed")
 		ark.Error().Err(err).Msg("Failed to create user profile")
@@ -255,7 +256,7 @@ func addAcmeUser(email string) {
 	}
 
 	// create profile
-	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+email, os.O_CREATE|os.O_WRONLY, 0660)
+	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+name, os.O_CREATE|os.O_WRONLY, 0660)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to create user profile")
 		return
@@ -272,7 +273,7 @@ func addAcmeUser(email string) {
 	// write profile to file
 	_, err = fp.WriteString(string(profileJson))
 	if err != nil {
-		ark.Error().Msg("Failed to add User " + email)
+		ark.Error().Msg("Failed to add User " + name)
 	} else {
 		ark.Info().Msg("User " + email + " added")
 	}
