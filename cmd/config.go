@@ -187,6 +187,22 @@ func (r *InitRunCondition) Run() (bool, error) {
 		}
 	}
 
+	// check DNSUserDir
+	if r.ShowLog {
+		ark.Info().Str("path", certark.DNSUserDir).Msg("Checking dns user directory")
+	}
+	if !certark.FileOrDirExists(certark.DNSUserDir) {
+		if !r.CheckMode {
+			err := os.MkdirAll(certark.DNSUserDir, os.ModePerm)
+			if err != nil {
+				ark.Error().Err(err).Msg("Run condition init failed")
+				return false, err
+			}
+		} else {
+			return false, errors.New(certark.DNSUserDir + " not found")
+		}
+	}
+
 	// write lock file
 	if !r.CheckMode {
 		ark.Info().Str("path", certark.InitLockFilePath).Msg("Writing lock file")
