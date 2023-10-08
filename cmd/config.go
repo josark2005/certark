@@ -126,7 +126,7 @@ func (r *InitRunCondition) Run() (bool, error) {
 	}
 	if !certark.FileOrDirExists(certark.ServiceConfigPath) {
 		if !r.CheckMode {
-			file, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_CREATE, 0660)
+			file, err := os.OpenFile(certark.ServiceConfigPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0660)
 			if err != nil {
 				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
@@ -206,7 +206,7 @@ func (r *InitRunCondition) Run() (bool, error) {
 	// write lock file
 	if !r.CheckMode {
 		ark.Info().Str("path", certark.InitLockFilePath).Msg("Writing lock file")
-		fp, err := os.OpenFile(certark.InitLockFilePath, os.O_CREATE, 0444)
+		fp, err := os.OpenFile(certark.InitLockFilePath, os.O_CREATE|os.O_TRUNC, 0444)
 		if err != nil {
 			ark.Error().Err(err).Msg("Run condition init failed")
 		}
@@ -251,7 +251,7 @@ func removeLockfile() (bool, error) {
 func cmdConfig() *cobra.Command {
 	return &cobra.Command{
 		Use:   "config",
-		Short: "CertArk configurations",
+		Short: "CertArk settings",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
