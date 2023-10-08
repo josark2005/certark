@@ -65,7 +65,7 @@ func init() {
 func cmdTask() *cobra.Command {
 	return &cobra.Command{
 		Use:   "task",
-		Short: "Task configurations",
+		Short: "Task profiles management",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
@@ -105,7 +105,7 @@ func cmdTaskShow() *cobra.Command {
 	}
 }
 
-// task add command
+// task add
 func cmdTaskAdd() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "add [TASK]",
@@ -373,7 +373,7 @@ func showTaskProfile(task string) {
 	profile := certark.TaskConfigDir + "/" + task
 	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
 		err := errors.New("task " + task + " does not exist")
-		ark.Error().Err(err).Msg("Failed to show acme user")
+		ark.Error().Err(err).Msg("Failed to show task profile")
 		return
 	}
 
@@ -397,7 +397,7 @@ func showTaskProfile(task string) {
 func addTaskProfile(task string) {
 	if checkTaskProfileExists(task) {
 		err := errors.New("task existed")
-		ark.Error().Err(err).Msg("Failed to create user profile")
+		ark.Error().Err(err).Msg("Failed to create task profile")
 		return
 	}
 
@@ -416,7 +416,7 @@ func addTaskProfile(task string) {
 	// write profile to file
 	_, err = fp.WriteString(string(profileJson))
 	if err != nil {
-		ark.Error().Msg("Failed to add task " + task)
+		ark.Error().Msg("Failed to create task " + task)
 	} else {
 		ark.Info().Msg("Task " + task + " added")
 	}
@@ -426,7 +426,7 @@ func addTaskProfile(task string) {
 func setTaskProfile(task, key, value string) bool {
 	if !checkTaskProfileExists(task) {
 		err := errors.New("task does not existed")
-		ark.Error().Err(err).Msg("Failed to append domains to task profile")
+		ark.Error().Err(err).Msg("Failed to modify task profile")
 		return false
 	}
 
@@ -443,7 +443,7 @@ func setTaskProfile(task, key, value string) bool {
 		"url_check_interval",
 	}
 
-	supportFlag := false // if key/option is supported, supportFlag will set to true
+	supportFlag := false // if option is supported, supportFlag will set to true
 	for _, sk := range supportedKey {
 		if key == sk {
 			supportFlag = true
@@ -451,7 +451,7 @@ func setTaskProfile(task, key, value string) bool {
 		}
 	}
 	if !supportFlag {
-		err := errors.New("not supported configuration key")
+		err := errors.New("not supported item")
 		ark.Error().Str("key", key).Err(err).Msg("Failed to set task profile")
 		return false
 	}
@@ -516,7 +516,7 @@ func setTaskProfile(task, key, value string) bool {
 		}
 		profile.UrlCheckInterval = int64(v)
 	default:
-		ark.Error().Msg("Failed to found a valid configuration key")
+		ark.Error().Msg("Failed to found a valid item")
 	}
 
 	// write profile to file
@@ -529,9 +529,9 @@ func setTaskProfile(task, key, value string) bool {
 	defer fp.Close()
 	_, err = fp.WriteString(string(profileJson))
 	if err != nil {
-		ark.Error().Msg("Failed to change task " + task)
+		ark.Error().Msg("Failed to modify task " + task)
 	} else {
-		ark.Info().Msg("Task " + task + " changed")
+		ark.Info().Msg("Task " + task + " modified")
 	}
 
 	return true
