@@ -686,7 +686,7 @@ func setAcmeUserTaskProfile(task string, acme string) {
 	}
 
 	// check if acme user exists
-	if !checkUserExists(acme) {
+	if !checkAcmeUserExists(acme) {
 		err := errors.New("acme user does not existed")
 		ark.Error().Err(err).Msg("Failed to set acme user to task profile")
 		return
@@ -750,7 +750,7 @@ func runTask(task string) {
 	acmeUser := gjson.Get(profile, "acme_user").String()
 
 	// check if acme user exists
-	if !checkUserExists(acmeUser) {
+	if !checkAcmeUserExists(acmeUser) {
 		err := errors.New("acme user does not existed")
 		ark.Error().Err(err).Str("task", task).Msg("Failed to found acme user in task profile")
 		return
