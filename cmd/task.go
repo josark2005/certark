@@ -319,7 +319,7 @@ func cmdTaskSet() *cobra.Command {
 	c.Flags().BoolVar(&enabled, "enable", true, "enable task")
 	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
 
-	c.Flags().StringVar(&dns_profile, "profile", certark.DefaultTaskProfile.DNSProfile, "set dns profile")
+	c.Flags().StringVarP(&dns_profile, "profile", "p", certark.DefaultTaskProfile.DNSProfile, "set dns profile")
 	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", certark.DefaultTaskProfile.DNSTTL, "set dns record ttl")
 	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", certark.DefaultTaskProfile.DNSPropagationTimeout, "set propagation timeout in seconds")
 	c.Flags().Int64Var(&dns_polling_interval, "interval", certark.DefaultTaskProfile.DNSPollingInterval, "set polling interval in seconds")
