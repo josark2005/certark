@@ -479,6 +479,7 @@ func setTaskProfile(task, key, value string) bool {
 		} else {
 			e := errors.New("failed to find acme user")
 			ark.Error().Err(e).Msg("Set acme user profile failed")
+			return false
 		}
 	case "enable":
 		if value == "true" {
@@ -492,24 +493,28 @@ func setTaskProfile(task, key, value string) bool {
 		} else {
 			e := errors.New("failed to find dns profile")
 			ark.Error().Err(e).Msg("Set dns profile failed")
+			return false
 		}
 		profile.DNSProfile = value
 	case "dns_ttl":
 		v, e := strconv.Atoi(value)
 		if e != nil {
 			ark.Error().Err(e).Msg("Set dns ttl failed")
+			return false
 		}
 		profile.DNSTTL = int64(v)
 	case "dns_propagation_timeout":
 		v, e := strconv.Atoi(value)
 		if e != nil {
 			ark.Error().Err(e).Msg("Set dns propagation timeout failed")
+			return false
 		}
 		profile.DNSPropagationTimeout = int64(v)
 	case "dns_polling_interval":
 		v, e := strconv.Atoi(value)
 		if e != nil {
 			ark.Error().Err(e).Msg("Set dns polling interval failed")
+			return false
 		}
 		profile.DNSPollingInterval = int64(v)
 	case "url_check_enable":
@@ -524,10 +529,12 @@ func setTaskProfile(task, key, value string) bool {
 		v, e := strconv.Atoi(value)
 		if e != nil {
 			ark.Error().Err(e).Msg("Set dns propagation timeout failed")
+			return false
 		}
 		profile.UrlCheckInterval = int64(v)
 	default:
 		ark.Error().Msg("Failed to found a valid item")
+		return false
 	}
 
 	// write profile to file
@@ -541,6 +548,7 @@ func setTaskProfile(task, key, value string) bool {
 	_, err = fp.WriteString(string(profileJson))
 	if err != nil {
 		ark.Error().Msg("Failed to modify task " + task)
+		return false
 	} else {
 		ark.Info().Msg("Task " + task + " modified")
 	}

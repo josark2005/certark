@@ -328,6 +328,7 @@ func setDNSUserProfile(dns, key, value string) bool {
 			profile.Provider = value
 		} else {
 			ark.Error().Str("dns", dns).Msg("Failed to set provider")
+			return false
 		}
 	case "account":
 		profile.Account = value
@@ -339,6 +340,7 @@ func setDNSUserProfile(dns, key, value string) bool {
 		profile.ZoneAPIToken = value
 	default:
 		ark.Error().Msg("Failed to found a valid item")
+		return false
 	}
 
 	// write profile to file
