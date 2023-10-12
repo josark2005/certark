@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -221,27 +220,12 @@ func listDNSProfiles() {
 
 // show dns user profile
 func showDNSUserProfile(dns string) {
-	profile := certark.DNSUserDir + "/" + dns
-	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
-		err := errors.New("DNS user " + dns + " does not exist")
-		ark.Error().Err(err).Msg("Failed to show DNS user proflie")
-		return
-	}
-
-	// read file
-	profileContent, err := os.ReadFile(profile)
+	profile, err := certark.GetDNSProfileJSONHuman(dns)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to show DNS user profile")
 		return
 	}
-
-	var jsonBuff bytes.Buffer
-	if err = json.Indent(&jsonBuff, profileContent, "", ""); err != nil {
-		ark.Error().Err(err).Msg("Failed to show DNS user profile")
-		return
-	}
-
-	fmt.Println(jsonBuff.String())
+	fmt.Println(profile)
 }
 
 // add dns user profile
