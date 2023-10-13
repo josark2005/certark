@@ -34,6 +34,10 @@ func IsDriverExists(driver string) bool {
 }
 
 func GetDriver(driverName string) (DriverConstructor, error) {
+	if driverName == "" {
+		err := errors.New("empty driver name is not supported")
+		return nil, err
+	}
 	if !IsDriverExists(driverName) {
 		err := errors.New("driver not found: " + driverName)
 		return nil, err
