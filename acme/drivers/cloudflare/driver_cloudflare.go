@@ -1,7 +1,6 @@
 package acme
 
 import (
-	"log"
 	"time"
 
 	"github.com/go-acme/lego/v4/certificate"
@@ -79,7 +78,7 @@ func (c *CloudflareDriver) RequestCertificate(client *lego.Client) (string, erro
 	}
 	certificates, err := client.Certificate.Obtain(request)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	return string(certificates.Certificate), nil
 }

@@ -5,3 +5,4 @@ import (
 )
 
 // Just for import drivers
+func ImportDrivers() {}

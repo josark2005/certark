@@ -18,6 +18,14 @@
             "mode": "auto",
             "program": "cmd/certark/main.go",
             "args": ["task", "ls"]
+        },
+        {
+            "name": "task run test",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "cmd/certark/main.go",
+            "args": ["task", "run", "test"]
         }
     ]
 }

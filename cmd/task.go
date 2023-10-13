@@ -11,6 +11,8 @@ import (
 
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/lego"
+	"github.com/jokin1999/certark/acme"
+	"github.com/jokin1999/certark/acme/drivers"
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
 	"github.com/spf13/cobra"
@@ -790,10 +792,22 @@ func runTask(task string) {
 		panic(err)
 	}
 
-	println(client)
+	// println(client)
 
 	//TODO -
 	// new provider
-	// provider_name := gjson.Get(profile, "dns_provider").String()
+	drivers.ImportDrivers()
+	provider_name := gjson.Get(profile, "dns_provider").String()
+	driverCons, err := acme.GetDriver(provider_name)
+	if err != nil {
+		ark.Error().Err(err).Msg("Init dns driver failed")
+		return
+	}
+	driver := driverCons()
 
+	res, err := driver.RequestCertificate(client)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(res)
 }
