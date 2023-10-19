@@ -10,15 +10,15 @@ import (
 	"github.com/jokin1999/certark/acme"
 )
 
-// check if acme user exists
-func CheckAcmeUserExists(name string) bool {
-	res := FileOrDirExists(AcmeUserDir + "/" + name)
-	return res
-}
-
 // get acme user filepath
 func GetAcmeUserFilepath(name string) string {
 	return AcmeUserDir + "/" + name
+}
+
+// check if acme user exists
+func CheckAcmeUserExists(name string) bool {
+	res := FileOrDirExists(GetAcmeUserFilepath(name))
+	return res
 }
 
 // get acme user
