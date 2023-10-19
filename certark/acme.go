@@ -91,11 +91,8 @@ func AddAcmeUser(name string, email string) error {
 
 	profileFilepath := GetAcmeUserFilepath(name)
 
-	profile := AcmeUserProfile{
-		Email:      email,
-		PrivateKey: "",
-		Enabled:    true,
-	}
+	profile := DefaultAcmeUserProfile
+	profile.Email = email
 
 	err := WriteStructToFile(profile, profileFilepath)
 	if err != nil {
