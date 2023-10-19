@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -394,81 +393,7 @@ func setTaskProfile(task, key, value string) bool {
 
 // Append domains in a task profile
 func appendDomainTaskProfile(task string, domains []string) {
-	if !checkTaskProfileExists(task) {
-		err := errors.New("task does not existed")
-		ark.Error().Err(err).Msg("Failed to append domains to task profile")
-		return
-	}
-
-	// read profile
-	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read task profile")
-		return
-	}
-	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
-
-	origDoamin := []string{}
-	newDoamin := []string{}
-	for _, v := range gjson.Get(string(profileContent), "domain").Array() {
-		if v.String() != "" {
-			origDoamin = append(origDoamin, v.String())
-		}
-	}
-
-	// filter old domains
-	for _, origD := range origDoamin {
-		if len(newDoamin) == 0 {
-			newDoamin = append(newDoamin, origD)
-		} else {
-			dflag := false
-			for _, newD := range newDoamin {
-				if origD == newD {
-					dflag = true
-					ark.Debug().Str("domain", origD).Msg("Skip duplicated domain")
-					continue
-				}
-			}
-			if !dflag {
-				newDoamin = append(newDoamin, origD)
-			}
-		}
-	}
-
-	// add new domains
-	for _, newD := range domains {
-		dflag := false
-		for _, domain := range newDoamin {
-			if domain == newD {
-				dflag = true
-				ark.Warn().Str("domain", newD).Msg("Dulipcated domain")
-				continue
-			}
-		}
-		if dflag {
-			continue
-		} else {
-			ark.Debug().Str("domain", newD).Msg("New domain found")
-			newDoamin = append(newDoamin, newD)
-		}
-	}
-
-	profile := certark.TaskProfile{}
-	err = json.Unmarshal([]byte(profileContent), &profile)
-	if err != nil {
-		ark.Error().Err(err).Str("task", task).Msg("Failed to parse task profile")
-	}
-	profile.Domain = newDoamin
-	profileJson, _ := json.Marshal(profile)
-
-	// write profile to file
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, 0660)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to open task profile")
-		return
-	}
-	defer fp.Close()
-	_, err = fp.WriteString(string(profileJson))
+	err := certark.AppendDomainTaskProfile(task, domains)
 	if err != nil {
 		ark.Error().Msg("Failed to change task " + task)
 	} else {
@@ -478,53 +403,7 @@ func appendDomainTaskProfile(task string, domains []string) {
 
 // Remove domains in a task profile
 func subtractDomainTaskProfile(task string, domain string) {
-	if !checkTaskProfileExists(task) {
-		err := errors.New("task does not existed")
-		ark.Error().Err(err).Msg("Failed to append domains to task profile")
-		return
-	}
-
-	// read profile
-	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read task profile")
-		return
-	}
-	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
-
-	origDoamin := []string{}
-	newDoamin := []string{}
-	for _, v := range gjson.Get(string(profileContent), "domain").Array() {
-		if v.String() != "" {
-			origDoamin = append(origDoamin, v.String())
-		}
-	}
-
-	// filter domains
-	for _, origD := range origDoamin {
-		if origD == domain {
-			continue
-		} else {
-			newDoamin = append(newDoamin, origD)
-		}
-	}
-
-	profile := certark.TaskProfile{
-		TaskName: gjson.Get(string(profileContent), "task_name").String(),
-		Domain:   newDoamin,
-		AcmeUser: gjson.Get(string(profileContent), "acme_user").String(),
-		Enabled:  gjson.Get(string(profileContent), "enabled").Bool(),
-	}
-	profileJson, _ := json.Marshal(profile)
-
-	// write profile to file
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, 0660)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to open task profile")
-		return
-	}
-	defer fp.Close()
-	_, err = fp.WriteString(string(profileJson))
+	err := certark.SubtractDomainTaskProfile(task, domain)
 	if err != nil {
 		ark.Error().Msg("Failed to change task " + task)
 	} else {
@@ -534,50 +413,7 @@ func subtractDomainTaskProfile(task string, domain string) {
 
 // set acme user in a task profile
 func setAcmeUserTaskProfile(task string, acme string) {
-	if !checkTaskProfileExists(task) {
-		err := errors.New("task does not existed")
-		ark.Error().Err(err).Msg("Failed to set acme user to task profile")
-		return
-	}
-
-	// check if acme user exists
-	if !certark.CheckAcmeUserExists(acme) {
-		err := errors.New("acme user does not existed")
-		ark.Error().Err(err).Msg("Failed to set acme user to task profile")
-		return
-	}
-
-	// read profile
-	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read task profile")
-		return
-	}
-	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
-
-	origDoamin := []string{}
-	for _, v := range gjson.Get(string(profileContent), "domain").Array() {
-		if v.String() != "" {
-			origDoamin = append(origDoamin, v.String())
-		}
-	}
-
-	profile := certark.TaskProfile{
-		TaskName: gjson.Get(string(profileContent), "task_name").String(),
-		Domain:   origDoamin,
-		AcmeUser: acme,
-		Enabled:  gjson.Get(string(profileContent), "enabled").Bool(),
-	}
-	profileJson, _ := json.Marshal(profile)
-
-	// write profile to file
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, 0660)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to open task profile")
-		return
-	}
-	defer fp.Close()
-	_, err = fp.WriteString(string(profileJson))
+	err := certark.SetAcmeUserTaskProfile(task, acme)
 	if err != nil {
 		ark.Error().Msg("Failed to change task " + task)
 	} else {
@@ -617,7 +453,10 @@ func runTask(task string) {
 		ark.Error().Err(err).Str("task", task).Msg("Read acme user failed")
 		return
 	}
-	config := lego.NewConfig(&au)
+	config := lego.NewConfig(&acme.AcmeUser{
+		Email: au.Email,
+		Key:   acme.PrivateKeyDecode(au.PrivateKey),
+	})
 	config.CADirURL = lego.LEDirectoryStaging
 	config.Certificate.KeyType = certcrypto.RSA2048
 

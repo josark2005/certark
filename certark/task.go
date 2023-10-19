@@ -84,7 +84,7 @@ func ListTasks() ([]string, error) {
 // add acme user
 func AddTask(name string) error {
 	if CheckTaskExists(name) {
-		err := errors.New("task existed")
+		err := errors.New("task exists")
 		return err
 	}
 
@@ -101,8 +101,8 @@ func AddTask(name string) error {
 
 // set task profile
 func SetTaskProfile(name string, key string, value string) error {
-	if CheckTaskExists(name) {
-		err := errors.New("task existed")
+	if !CheckTaskExists(name) {
+		err := errors.New("task does not exist")
 		return err
 	}
 
@@ -181,5 +181,84 @@ func SetTaskProfile(name string, key string, value string) error {
 		return err
 	}
 
+	return nil
+}
+
+// append domains in a task profile
+func AppendDomainTaskProfile(name string, domains []string) error {
+	if !CheckTaskExists(name) {
+		err := errors.New("task does not exist")
+		return err
+	}
+
+	task, err := GetTask(name)
+	if err != nil {
+		return err
+	}
+
+	task.Domain = append(task.Domain, domains...)
+
+	err = WriteStructToFile(task, GetTaskFilepath(name))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// remove domains in a task profile
+func SubtractDomainTaskProfile(name string, domain string) error {
+	if !CheckTaskExists(name) {
+		err := errors.New("task does not exist")
+		return err
+	}
+
+	task, err := GetTask(name)
+	if err != nil {
+		return err
+	}
+
+	domainsNew := []string{}
+	for _, v := range task.Domain {
+		if v != domain {
+			domainsNew = append(domainsNew, v)
+		} else {
+			continue
+		}
+	}
+
+	task.Domain = domainsNew
+
+	err = WriteStructToFile(task, GetTaskFilepath(name))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// set acme user in a task profile
+func SetAcmeUserTaskProfile(name string, acme string) error {
+	if !CheckTaskExists(name) {
+		err := errors.New("task does not exist")
+		return err
+	}
+
+	// check if acme user exists
+	if !CheckAcmeUserExists(acme) {
+		err := errors.New("acme user does not existed")
+		return err
+	}
+
+	task, err := GetTask(name)
+	if err != nil {
+		return err
+	}
+
+	task.AcmeUser = acme
+
+	err = WriteStructToFile(task, GetTaskFilepath(name))
+	if err != nil {
+		return err
+	}
 	return nil
 }
