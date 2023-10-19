@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/go-acme/lego/v4/certcrypto"
@@ -354,69 +352,29 @@ func cmdTaskRun() *cobra.Command {
 
 // list task profiles
 func listTasks() {
-	err := filepath.Walk(certark.TaskConfigDir, func(path string, info os.FileInfo, err error) error {
-		if path == certark.TaskConfigDir {
-			return nil
-		}
-		if info.IsDir() {
-			return nil
-		}
-		fmt.Println(path[len(certark.TaskConfigDir)+1:])
-		return nil
-	})
+	tasks, err := certark.ListTasks()
 	if err != nil {
-		ark.Error().Err(err).Msg("Failed to list task profiles")
+		ark.Error().Err(err).Msg("Failed to list tasks")
 		return
+	}
+	for _, v := range tasks {
+		fmt.Println(v)
 	}
 }
 
 // show task profile
 func showTaskProfile(task string) {
-	profile := certark.TaskConfigDir + "/" + task
-	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
-		err := errors.New("task " + task + " does not exist")
-		ark.Error().Err(err).Msg("Failed to show task profile")
-		return
-	}
-
-	// read file
-	profileContent, err := os.ReadFile(profile)
+	profile, err := certark.GetTaskJsonPretty(task)
 	if err != nil {
-		ark.Error().Err(err).Msg("Failed to show task profile")
+		ark.Error().Err(err).Msg("Failed to show task")
 		return
 	}
-
-	var jsonBuff bytes.Buffer
-	if err = json.Indent(&jsonBuff, profileContent, "", ""); err != nil {
-		ark.Error().Err(err).Msg("Failed to show task profile")
-		return
-	}
-
-	fmt.Println(jsonBuff.String())
+	fmt.Println(profile)
 }
 
 // add task profile
 func addTaskProfile(task string) {
-	if checkTaskProfileExists(task) {
-		err := errors.New("task existed")
-		ark.Error().Err(err).Msg("Failed to create task profile")
-		return
-	}
-
-	// create profile
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_CREATE|os.O_WRONLY, 0660)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to create task profile")
-		return
-	}
-	defer fp.Close()
-
-	profile := certark.DefaultTaskProfile
-	profile.TaskName = task
-	profileJson, _ := json.Marshal(profile)
-
-	// write profile to file
-	_, err = fp.WriteString(string(profileJson))
+	err := certark.AddTask(task)
 	if err != nil {
 		ark.Error().Msg("Failed to create task " + task)
 	} else {
@@ -426,135 +384,11 @@ func addTaskProfile(task string) {
 
 // set task profile
 func setTaskProfile(task, key, value string) bool {
-	if !checkTaskProfileExists(task) {
-		err := errors.New("task does not existed")
-		ark.Error().Err(err).Msg("Failed to modify task profile")
-		return false
-	}
-
-	supportedKey := []string{
-		"domain",
-		"acme_user",
-		"enable",
-		"dns_profile",
-		"dns_ttl",
-		"dns_propagation_timeout",
-		"dns_polling_interval",
-		"url_check_enable",
-		"url_check_target",
-		"url_check_interval",
-	}
-
-	supportFlag := false // if option is supported, supportFlag will set to true
-	for _, sk := range supportedKey {
-		if key == sk {
-			supportFlag = true
-			break
-		}
-	}
-	if !supportFlag {
-		err := errors.New("not supported item")
-		ark.Error().Str("key", key).Err(err).Msg("Failed to set task profile")
-		return false
-	}
-
-	ark.Info().Str("key", key).Str("value", value).Msg("Setting task profile")
-
-	// read profile
-	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
+	err := certark.SetTaskProfile(task, key, value)
 	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read task profile")
-	}
-	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
-	profile := certark.TaskProfile{}
-	err = json.Unmarshal(profileContent, &profile)
-	if err != nil {
-		ark.Error().Err(err).Str("task", task).Msg("Failed to parse task profile")
-	}
-
-	switch key {
-	case "domain":
-		profile.Domain = []string{value}
-	case "acme_user":
-		if certark.CheckAcmeUserExists(value) {
-			profile.AcmeUser = value
-		} else {
-			e := errors.New("failed to find acme user")
-			ark.Error().Err(e).Msg("Set acme user profile failed")
-			return false
-		}
-	case "enable":
-		if value == "true" {
-			profile.Enabled = true
-		} else {
-			profile.Enabled = false
-		}
-	case "dns_profile":
-		if checkDNSProfileExists(value) {
-			profile.DNSProfile = value
-		} else {
-			e := errors.New("failed to find dns profile")
-			ark.Error().Err(e).Msg("Set dns profile failed")
-			return false
-		}
-		profile.DNSProfile = value
-	case "dns_ttl":
-		v, e := strconv.Atoi(value)
-		if e != nil {
-			ark.Error().Err(e).Msg("Set dns ttl failed")
-			return false
-		}
-		profile.DNSTTL = int64(v)
-	case "dns_propagation_timeout":
-		v, e := strconv.Atoi(value)
-		if e != nil {
-			ark.Error().Err(e).Msg("Set dns propagation timeout failed")
-			return false
-		}
-		profile.DNSPropagationTimeout = int64(v)
-	case "dns_polling_interval":
-		v, e := strconv.Atoi(value)
-		if e != nil {
-			ark.Error().Err(e).Msg("Set dns polling interval failed")
-			return false
-		}
-		profile.DNSPollingInterval = int64(v)
-	case "url_check_enable":
-		if value == "true" {
-			profile.UrlCheckEnable = true
-		} else {
-			profile.UrlCheckEnable = false
-		}
-	case "url_check_target":
-		profile.UrlCheckTarget = value
-	case "url_check_interval":
-		v, e := strconv.Atoi(value)
-		if e != nil {
-			ark.Error().Err(e).Msg("Set dns propagation timeout failed")
-			return false
-		}
-		profile.UrlCheckInterval = int64(v)
-	default:
-		ark.Error().Msg("Failed to found a valid item")
+		ark.Error().Err(err).Msg("Failed to set task profile")
 		return false
 	}
-
-	// write profile to file
-	profileJson, _ := json.Marshal(profile)
-	fp, err := os.OpenFile(certark.TaskConfigDir+"/"+task, os.O_WRONLY|os.O_TRUNC, 0660)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to open task profile")
-		return false
-	}
-	defer fp.Close()
-	_, err = fp.WriteString(string(profileJson))
-	if err != nil {
-		ark.Error().Msg("Failed to modify task " + task)
-		return false
-	} else {
-		ark.Info().Msg("Task " + task + " modified")
-	}
-
 	return true
 }
 
@@ -778,7 +612,7 @@ func runTask(task string) {
 	}
 
 	// read acme user profile
-	au, err := GetAcmeUser(acmeUser)
+	au, err := certark.GetAcmeUser(acmeUser)
 	if err != nil {
 		ark.Error().Err(err).Str("task", task).Msg("Read acme user failed")
 		return

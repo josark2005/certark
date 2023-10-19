@@ -3,7 +3,9 @@ package certark
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"reflect"
 	"regexp"
 )
 
@@ -72,4 +74,16 @@ func WriteStructToFile(s any, filepath string) error {
 		return err
 	}
 	return nil
+}
+
+// check if a json tag exists in a struct
+func CheckStructJsonTagExists(s any, key string) bool {
+	res := reflect.TypeOf(s)
+	fmt.Println(res)
+	for i := 0; i < res.NumField(); i++ {
+		if res.Field(i).Tag.Get("json") == key {
+			return true
+		}
+	}
+	return false
 }

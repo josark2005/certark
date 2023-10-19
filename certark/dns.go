@@ -76,3 +76,8 @@ func GetDNSProfileJSONHuman(dns string) (string, error) {
 
 	return jsonBuff.String(), nil
 }
+
+func CheckDNSProfileExists(dns string) bool {
+	res := FileOrDirExists(DNSUserDir + "/" + dns)
+	return res
+}

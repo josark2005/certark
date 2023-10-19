@@ -1,39 +1,185 @@
 package certark
 
-type TaskProfile struct {
-	TaskName string   `json:"task_name"`
-	Domain   []string `json:"domain"`
-	AcmeUser string   `json:"acme_user"`
-	Enabled  bool     `json:"enabled"`
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"os"
+	"path/filepath"
+	"strconv"
+)
 
-	DNSProfile            string `json:"dns_profile"`
-	DNSTTL                int64  `json:"dns_ttl"`                 // ttl 120 is recommanded
-	DNSPropagationTimeout int64  `json:"dns_propagation_timeout"` // in millisecond, 60*1000 is recommanded
-	DNSPollingInterval    int64  `json:"dns_polling_interval"`    // in millisecond, 5 *1000 is recommanded
-
-	UrlCheckEnable   bool   `json:"url_check_enable"`
-	UrlCheckTarget   string `json:"url_check_target"`
-	UrlCheckInterval int64  `json:"url_check_interval"` // in day, 1 is recommanded
-
-	CertExportPath        string `json:"cert_export_path"`         // export cert after cert updating
-	PostCertUpdateCommand string `json:"post_cert_update_command"` // command runs after cert udpating
+// get acme user filepath
+func GetTaskFilepath(name string) string {
+	return TaskConfigDir + "/" + name
 }
 
-var DefaultTaskProfile = TaskProfile{
-	TaskName: "default",
-	Domain:   []string{},
-	AcmeUser: "",
-	Enabled:  true,
+// check if acme user exists
+func CheckTaskExists(name string) bool {
+	res := FileOrDirExists(GetTaskFilepath(name))
+	return res
+}
 
-	DNSProfile:            "",
-	DNSTTL:                120,
-	DNSPropagationTimeout: 60,
-	DNSPollingInterval:    5,
+// get task
+func GetTask(name string) (TaskProfile, error) {
+	profilePath := GetTaskFilepath(name)
 
-	UrlCheckEnable:   false,
-	UrlCheckTarget:   "",
-	UrlCheckInterval: 1,
+	profile := TaskProfile{}
+	err := ReadFileAndParseJson(profilePath, &profile)
+	if err != nil {
+		return TaskProfile{}, err
+	}
 
-	CertExportPath:        "",
-	PostCertUpdateCommand: "",
+	return profile, nil
+}
+
+// get task json
+func GetTaskJson(name string) ([]byte, error) {
+	profilePath := GetTaskFilepath(name)
+
+	content, err := os.ReadFile(profilePath)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return content, nil
+}
+
+// get task json pretty
+func GetTaskJsonPretty(name string) (string, error) {
+	profileContent, err := GetTaskJson(name)
+	if err != nil {
+		return "", err
+	}
+
+	var jsonBuff bytes.Buffer
+	if err = json.Indent(&jsonBuff, profileContent, "", ""); err != nil {
+		return "", err
+	}
+
+	return jsonBuff.String(), nil
+}
+
+// list tasks
+func ListTasks() ([]string, error) {
+	tasks := []string{}
+	err := filepath.Walk(TaskConfigDir, func(path string, info os.FileInfo, err error) error {
+		// skip dir itself
+		if path == TaskConfigDir {
+			return nil
+		}
+		// skip dirs
+		if info.IsDir() {
+			return nil
+		}
+		tasks = append(tasks, path[len(TaskConfigDir)+1:])
+		return nil
+	})
+	if err != nil {
+		return []string{}, err
+	}
+	return tasks, nil
+}
+
+// add acme user
+func AddTask(name string) error {
+	if CheckTaskExists(name) {
+		err := errors.New("task existed")
+		return err
+	}
+
+	profileFilepath := GetTaskFilepath(name)
+
+	profile := DefaultTaskProfile
+
+	err := WriteStructToFile(profile, profileFilepath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// set task profile
+func SetTaskProfile(name string, key string, value string) error {
+	if CheckTaskExists(name) {
+		err := errors.New("task existed")
+		return err
+	}
+
+	// check supported key
+	if !CheckStructJsonTagExists(TaskProfile{}, key) {
+		err := errors.New("task profile key not supported")
+		return err
+	}
+
+	task, err := GetTask(name)
+	if err != nil {
+		return err
+	}
+
+	switch key {
+	case "domain":
+		task.Domain = []string{value}
+	case "acme_user":
+		if CheckAcmeUserExists(value) {
+			task.AcmeUser = value
+		} else {
+			e := errors.New("failed to find acme user")
+			return e
+		}
+	case "enable":
+		if value == "true" {
+			task.Enabled = true
+		} else {
+			task.Enabled = false
+		}
+	case "dns_profile":
+		if CheckDNSProfileExists(value) {
+			task.DNSProfile = value
+		} else {
+			return errors.New("failed to find dns profile")
+		}
+		task.DNSProfile = value
+	case "dns_ttl":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			return e
+		}
+		task.DNSTTL = int64(v)
+	case "dns_propagation_timeout":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			return e
+		}
+		task.DNSPropagationTimeout = int64(v)
+	case "dns_polling_interval":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			return e
+		}
+		task.DNSPollingInterval = int64(v)
+	case "url_check_enable":
+		if value == "true" {
+			task.UrlCheckEnable = true
+		} else {
+			task.UrlCheckEnable = false
+		}
+	case "url_check_target":
+		task.UrlCheckTarget = value
+	case "url_check_interval":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			return e
+		}
+		task.UrlCheckInterval = int64(v)
+	default:
+		return errors.New("failed to found a valid item")
+	}
+
+	err = WriteStructToFile(task, GetTaskFilepath(name))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
