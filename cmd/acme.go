@@ -1,44 +1,12 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
-	"regexp"
 
-	"github.com/jokin1999/certark/acme"
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
 	"github.com/spf13/cobra"
-	"github.com/tidwall/gjson"
 )
-
-const reEmail = `^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$`
-
-func checkEmail(email string) bool {
-	exp, _ := regexp.Compile(reEmail)
-	res := exp.Match([]byte(email))
-	if res {
-		ark.Debug().Msg("Email check passed")
-	} else {
-		ark.Debug().Msg("Email check failed")
-	}
-	return res
-}
-
-// check if acme user exists
-func checkAcmeUserExists(name string) bool {
-	res := certark.FileOrDirExists(certark.AcmeUserDir + "/" + name)
-	if res {
-		ark.Debug().Msg("Acme user exists")
-	} else {
-		ark.Debug().Msg("Acme user does not exist")
-	}
-	return res
-}
 
 func init() {
 	// acme main command
@@ -141,7 +109,7 @@ func cmdAcmeAdd() *cobra.Command {
 			if len(args) > 0 {
 				acmeName := args[0]
 				acmeEmail := args[1]
-				if !checkEmail(acmeEmail) {
+				if !certark.CheckEmail(acmeEmail) {
 					ark.Warn().Msg("Unsupported email format")
 				} else {
 					// add acme user
@@ -171,7 +139,7 @@ func cmdAcmeRm() *cobra.Command {
 					ark.Warn().Msg("A comfirm flag is required, add --yes-i-really-mean-it flag at the end of the command")
 					return
 				}
-				rmAcmeUser(acmeEmail)
+				removeAcmeUser(acmeEmail)
 			}
 		},
 	}
@@ -205,230 +173,63 @@ func cmdAcmeSet() *cobra.Command {
 
 // list acme users
 func listAcmeUsers() {
-	err := filepath.Walk(certark.AcmeUserDir, func(path string, info os.FileInfo, err error) error {
-		if path == certark.AcmeUserDir {
-			return nil
-		}
-		if info.IsDir() {
-			return nil
-		}
-		fmt.Println(path[len(certark.AcmeUserDir)+1:])
-		return nil
-	})
+	users, err := certark.ListAcmeUsers()
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to list acme users")
 		return
+	}
+	for _, v := range users {
+		fmt.Println(v)
 	}
 }
 
 // show acme user
 func showAcmeUser(acmeName string) {
-	profile := certark.AcmeUserDir + "/" + acmeName
-	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
-		err := errors.New("user " + acmeName + " does not exist")
-		ark.Error().Err(err).Msg("Failed to show acme user")
-		return
-	}
-
-	// read file
-	profileContent, err := os.ReadFile(profile)
+	profile, err := certark.GetAcmeUserJsonPretty(acmeName)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to show acme user")
 		return
 	}
-
-	var jsonBuff bytes.Buffer
-	if err = json.Indent(&jsonBuff, profileContent, "", ""); err != nil {
-		ark.Error().Err(err).Msg("Failed to show acme user")
-		return
-	}
-
-	fmt.Println(jsonBuff.String())
+	fmt.Println(profile)
 }
 
 // add acme user
 func addAcmeUser(name string, email string) {
-	if checkAcmeUserExists(name) {
-		// user exists
-		err := errors.New("user existed")
-		ark.Error().Err(err).Msg("Failed to create user profile")
-		return
-	}
-
-	// create profile
-	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0660)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to create user profile")
-		return
-	}
-	defer fp.Close()
-
-	profile := certark.AcmeUserProfile{
-		Email:      email,
-		PrivateKey: "",
-		Enabled:    true,
-	}
-	profileJson, _ := json.Marshal(profile)
-
-	// write profile to file
-	_, err = fp.WriteString(string(profileJson))
+	err := certark.AddAcmeUser(name, email)
 	if err != nil {
 		ark.Error().Msg("Failed to add User " + name)
 	} else {
-		ark.Info().Msg("User " + email + " added")
+		ark.Info().Msg("User " + name + " added")
 	}
 }
 
 // remove acme user
-func rmAcmeUser(acmeName string) {
-	if !checkAcmeUserExists(acmeName) {
-		// user does not exist
-		err := errors.New("acme user does not exist")
-		ark.Error().Err(err).Msg("Failed to remove acme user profile")
-		return
-	}
-
-	// remove profile
-	err := os.Remove(certark.AcmeUserDir + "/" + acmeName)
+func removeAcmeUser(name string) {
+	err := certark.RemoveAcmeUser(name)
 	if err != nil {
-		ark.Error().Err(err).Msg("Failed to remove user profile")
-		return
+		ark.Error().Msg("Failed to remove acme user " + name)
+	} else {
+		ark.Info().Msg("Acme user " + name + " removed")
 	}
 
-	ark.Info().Msg("Acme user " + acmeName + " removed")
 }
 
 // set acme user profile private key
 func setAcmeUserPirvateKeyInFile(acmeName string, privateKeyPath string) {
-	if !checkAcmeUserExists(acmeName) {
-		// user does not exist
-		err := errors.New("user does not exist")
-		ark.Error().Err(err).Msg("Failed to set acme user profile")
-		return
-	}
+	err := certark.SetAcmeUserPrivateKeyInFile(acmeName, privateKeyPath)
 
-	// read private key
-	privatekey, err := os.ReadFile(privateKeyPath)
 	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read private key")
-		return
-	}
-
-	// prepare profile data
-	profile, err := GetAcmeUserProfile(acmeName)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read original acme user")
-		return
-	}
-	profile.PrivateKey = string(bytes.Trim(privatekey, " \n"))
-
-	profileJson, _ := json.Marshal(profile)
-	ark.Debug().Str("content", string(profileJson)).Msg("prepared profile data")
-
-	// write profile to file
-	fp, err := os.OpenFile(certark.AcmeUserDir+"/"+acmeName, os.O_WRONLY|os.O_TRUNC, 0660)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to open acme user profile")
-		return
-	}
-	defer fp.Close()
-	_, err = fp.WriteString(string(profileJson))
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to add User " + acmeName)
+		ark.Error().Err(err).Msg("Failed to update User " + acmeName)
 	} else {
-		ark.Info().Msg("User " + acmeName + " set")
+		ark.Info().Msg("User " + acmeName + " private key updated")
 	}
 }
 
 // register acme user
 func regAcmeUser(acmeName string) {
-	if !checkAcmeUserExists(acmeName) {
-		// user does not exist
-		err := errors.New("user does not exist")
-		ark.Error().Err(err).Msg("Failed to find acme user profile")
+	err := certark.RegisterAcmeUser(acmeName)
+	if err != nil {
+		ark.Error().Err(err).Msg("Failed to register acme user")
 		return
 	}
-
-	profilePath := certark.AcmeUserDir + "/" + acmeName
-
-	// read acme user profile
-	profile, err := os.ReadFile(profilePath)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read acme user profile")
-		return
-	}
-	ark.Debug().Str("content", string(profile)).Msg("Read acme user profile")
-
-	// register acme user
-	acmeUsername := gjson.Get(string(profile), "email").String()
-	privateKey := ""
-	if certark.CurrentConfig.Mode == certark.MODE_PROD {
-		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_PRODUCTION)
-	} else {
-		privateKey = acme.RegisterAcmeUser(acmeUsername, acme.MODE_STAGING)
-	}
-
-	// regenerate profile
-	newProfile := certark.AcmeUserProfile{
-		Email:      gjson.Get(string(profile), "email").String(),
-		PrivateKey: privateKey,
-		Enabled:    gjson.Get(string(profile), "enabled").Bool(),
-	}
-
-	// write acme user profile
-	fp, err := os.OpenFile(profilePath, os.O_WRONLY|os.O_TRUNC, 0660)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to open acme user profile")
-		return
-	}
-	defer fp.Close()
-
-	// convert json to string
-	profileJson, _ := json.Marshal(newProfile)
-	ark.Debug().Str("content", string(profileJson)).Msg("prepared profile data")
-
-	// write profile
-	_, err = fp.WriteString(string(profileJson))
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to write acme user profile")
-		return
-	}
-}
-
-// get acme user profile
-func GetAcmeUserProfile(acmeName string) (certark.AcmeUserProfile, error) {
-	profile := certark.AcmeUserDir + "/" + acmeName
-	if !certark.FileOrDirExists(profile) || !certark.IsFile(profile) {
-		err := errors.New("user " + acmeName + " does not exist")
-		ark.Error().Err(err).Msg("Failed to find acme user")
-		return certark.AcmeUserProfile{}, err
-	}
-
-	// read file
-	profileContent, err := os.ReadFile(profile)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to read acme user profile")
-		return certark.AcmeUserProfile{}, err
-	}
-
-	acme := certark.AcmeUserProfile{
-		Email:      gjson.Get(string(profileContent), "email").String(),
-		PrivateKey: gjson.Get(string(profileContent), "privatekey").String(),
-		Enabled:    gjson.Get(string(profileContent), "enabled").Bool(),
-	}
-
-	return acme, nil
-}
-
-// get acme user
-func GetAcmeUser(acmeName string) (acme.AcmeUser, error) {
-	aup, err := GetAcmeUserProfile(acmeName)
-	if err != nil {
-		return acme.AcmeUser{}, err
-	}
-
-	return acme.AcmeUser{
-		Email: aup.Email,
-		Key:   acme.PrivateKeyDecode(aup.PrivateKey),
-	}, nil
 }

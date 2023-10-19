@@ -476,7 +476,7 @@ func setTaskProfile(task, key, value string) bool {
 	case "domain":
 		profile.Domain = []string{value}
 	case "acme_user":
-		if checkAcmeUserExists(value) {
+		if certark.CheckAcmeUserExists(value) {
 			profile.AcmeUser = value
 		} else {
 			e := errors.New("failed to find acme user")
@@ -707,7 +707,7 @@ func setAcmeUserTaskProfile(task string, acme string) {
 	}
 
 	// check if acme user exists
-	if !checkAcmeUserExists(acme) {
+	if !certark.CheckAcmeUserExists(acme) {
 		err := errors.New("acme user does not existed")
 		ark.Error().Err(err).Msg("Failed to set acme user to task profile")
 		return
@@ -771,7 +771,7 @@ func runTask(task string) {
 	acmeUser := gjson.Get(profile, "acme_user").String()
 
 	// check if acme user exists
-	if !checkAcmeUserExists(acmeUser) {
+	if !certark.CheckAcmeUserExists(acmeUser) {
 		err := errors.New("acme user does not existed")
 		ark.Error().Err(err).Str("task", task).Msg("Failed to found acme user in task profile")
 		return
