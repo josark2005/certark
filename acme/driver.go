@@ -42,6 +42,3 @@ func GetDriver(driverName string) (DriverConstructor, error) {
 	}
 	return driverMap[driverName], nil
 }
-
-// import drivers
-// var _ := drivers
