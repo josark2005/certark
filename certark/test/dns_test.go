@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetDNSProfile(t *testing.T) {
-	profile, err := certark.GetDNSProfile("cf")
+	profile, err := certark.GetDns("cf")
 	if err != nil {
 		t.Error(err)
 	} else {

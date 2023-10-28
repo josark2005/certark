@@ -21,7 +21,7 @@ var (
 	TaskConfigDir     = ServiceConfigDir + "/task"
 	StateDir          = ServiceConfigDir + "/state"
 	AcmeUserDir       = ServiceConfigDir + "/acme"
-	DNSUserDir        = ServiceConfigDir + "/dns"
+	DnsUserDir        = ServiceConfigDir + "/dns"
 	CertarkService    = "certark.service"
 )
 

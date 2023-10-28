@@ -189,17 +189,17 @@ func (r *InitRunCondition) Run() (bool, error) {
 
 	// check DNSUserDir
 	if r.ShowLog {
-		ark.Info().Str("path", certark.DNSUserDir).Msg("Checking dns user directory")
+		ark.Info().Str("path", certark.DnsUserDir).Msg("Checking dns user directory")
 	}
-	if !certark.FileOrDirExists(certark.DNSUserDir) {
+	if !certark.FileOrDirExists(certark.DnsUserDir) {
 		if !r.CheckMode {
-			err := os.MkdirAll(certark.DNSUserDir, os.ModePerm)
+			err := os.MkdirAll(certark.DnsUserDir, os.ModePerm)
 			if err != nil {
 				ark.Error().Err(err).Msg("Run condition init failed")
 				return false, err
 			}
 		} else {
-			return false, errors.New(certark.DNSUserDir + " not found")
+			return false, errors.New(certark.DnsUserDir + " not found")
 		}
 	}
 

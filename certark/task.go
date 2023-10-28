@@ -134,7 +134,7 @@ func SetTaskProfile(name string, key string, value string) error {
 			task.Enabled = false
 		}
 	case "dns_profile":
-		if CheckDNSProfileExists(value) {
+		if CheckDnsUserExists(value) {
 			task.DNSProfile = value
 		} else {
 			return errors.New("failed to find dns profile")

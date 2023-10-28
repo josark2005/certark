@@ -2,7 +2,6 @@ package acme
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/lego"
@@ -24,11 +23,10 @@ var driverMap = map[string]DriverConstructor{}
 // reigster driver
 func RegisterDriver(driverName string, driver DriverConstructor) {
 	driverMap[driverName] = driver
-	fmt.Println(driverMap)
 }
 
 // check acme driver exists
-func IsDriverExists(driver string) bool {
+func CheckDriverExists(driver string) bool {
 	_, ok := driverMap[driver]
 	return ok
 }
@@ -38,7 +36,7 @@ func GetDriver(driverName string) (DriverConstructor, error) {
 		err := errors.New("empty driver name is not supported")
 		return nil, err
 	}
-	if !IsDriverExists(driverName) {
+	if !CheckDriverExists(driverName) {
 		err := errors.New("driver not found: " + driverName)
 		return nil, err
 	}
