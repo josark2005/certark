@@ -114,58 +114,37 @@ func cmdDNSSet() *cobra.Command {
 				dns := args[0]
 				// set dns user profile enabled
 				if cmd.Flags().Lookup("enable").Changed {
-					ok := setDnsUserProfile(dns, "enable", "true")
-					if !ok {
-						ark.Error().Msg("Set domain failed")
-					}
+					setDnsUserProfile(dns, "enable", "true")
 				}
 
 				// set dns user profile disbaled
 				if cmd.Flags().Lookup("disable").Changed {
-					ok := setDnsUserProfile(dns, "enable", "false")
-					if !ok {
-						ark.Error().Msg("Set domain failed")
-					}
+					setDnsUserProfile(dns, "enable", "false")
 				}
 
 				// set dns user profile provider
 				if cmd.Flags().Lookup("provider").Changed {
-					ok := setDnsUserProfile(dns, "provider", provider)
-					if !ok {
-						ark.Error().Msg("Set provider failed")
-					}
+					setDnsUserProfile(dns, "provider", provider)
 				}
 
 				// set dns user profile account
 				if cmd.Flags().Lookup("account").Changed {
-					ok := setDnsUserProfile(dns, "account", account)
-					if !ok {
-						ark.Error().Msg("Set account failed")
-					}
+					setDnsUserProfile(dns, "account", account)
 				}
 
 				// set dns user profile api_key
 				if cmd.Flags().Lookup("apikey").Changed {
-					ok := setDnsUserProfile(dns, "api_key", api_key)
-					if !ok {
-						ark.Error().Msg("Set API key failed")
-					}
+					setDnsUserProfile(dns, "api_key", api_key)
 				}
 
 				// set dns user profile dns_api_token
 				if cmd.Flags().Lookup("dnstoken").Changed {
-					ok := setDnsUserProfile(dns, "dns_api_token", dns_api_token)
-					if !ok {
-						ark.Error().Msg("Set DNS edit API token failed")
-					}
+					setDnsUserProfile(dns, "dns_api_token", dns_api_token)
 				}
 
 				// set dns user profile zone_api_token
 				if cmd.Flags().Lookup("zonetoken").Changed {
-					ok := setDnsUserProfile(dns, "zone_api_token", zone_api_token)
-					if !ok {
-						ark.Error().Msg("Set DNS zone read API token failed")
-					}
+					setDnsUserProfile(dns, "zone_api_token", zone_api_token)
 				}
 			} else {
 				cmd.Help()
@@ -173,8 +152,8 @@ func cmdDNSSet() *cobra.Command {
 		},
 	}
 
-	c.Flags().BoolVar(&enabled, "enable", true, "enable task")
-	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
+	c.Flags().BoolVar(&enabled, "enable", true, "enable DNS user profile")
+	c.Flags().BoolVar(&enabled, "disable", false, "disable DNS user profile")
 
 	c.Flags().StringVarP(&provider, "provider", "p", certark.DefaultDnsUserProfile.Provider, "set DNS provider")
 	c.Flags().StringVarP(&account, "account", "a", certark.DefaultDnsUserProfile.Account, "set DNS provider account")
@@ -186,19 +165,19 @@ func cmdDNSSet() *cobra.Command {
 
 // list dns user profiles
 func listDnsUserProfiles() {
-	tasks, err := certark.ListDnsUserProfiles()
+	dnsProfiles, err := certark.ListDnsUserProfiles()
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to list DNS profiles")
 		return
 	}
-	for _, v := range tasks {
+	for _, v := range dnsProfiles {
 		fmt.Println(v)
 	}
 }
 
 // show dns user profile
-func showDnsUserProfile(task string) {
-	profile, err := certark.GetDnsJsonPretty(task)
+func showDnsUserProfile(dns string) {
+	profile, err := certark.GetDnsJsonPretty(dns)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to show DNS user profile")
 		return
@@ -215,11 +194,9 @@ func addDnsUserProfile(dns string) {
 }
 
 // set dns user profile
-func setDnsUserProfile(dns, key, value string) bool {
-	err := certark.SetTaskProfile(dns, key, value)
+func setDnsUserProfile(dns, key, value string) {
+	err := certark.SetDnsUserProfile(dns, key, value)
 	if err != nil {
 		ark.Error().Err(err).Msg("Failed to set dns user profile")
-		return false
 	}
-	return true
 }

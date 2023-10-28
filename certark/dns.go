@@ -23,7 +23,7 @@ func CheckDnsUserExists(name string) bool {
 
 // get dns profile
 func GetDns(name string) (DnsUserProfile, error) {
-	profilePath := GetTaskFilepath(name)
+	profilePath := GetDnsFilepath(name)
 
 	profile := DnsUserProfile{}
 	err := ReadFileAndParseJson(profilePath, &profile)
