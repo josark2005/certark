@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/jokin1999/certark/acme"
 )
@@ -152,6 +153,24 @@ func SetDnsUserProfile(name string, key string, value string) error {
 		dns.ApiKey = value
 	case "zone_api_token":
 		dns.ZoneApiToken = value
+	case "dns_ttl":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			return e
+		}
+		dns.DnsTTL = int64(v)
+	case "dns_propagation_timeout":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			return e
+		}
+		dns.DnsPropagationTimeout = int64(v)
+	case "dns_polling_interval":
+		v, e := strconv.Atoi(value)
+		if e != nil {
+			return e
+		}
+		dns.DnsPollingInterval = int64(v)
 	default:
 		return errors.New("failed to found a valid item")
 	}

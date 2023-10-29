@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
@@ -95,12 +96,15 @@ func cmdDNSAdd() *cobra.Command {
 // dns set
 func cmdDNSSet() *cobra.Command {
 	var (
-		enabled        bool
-		provider       string
-		account        string
-		api_key        string
-		dns_api_token  string
-		zone_api_token string
+		enabled                 bool
+		provider                string
+		account                 string
+		api_key                 string
+		dns_api_token           string
+		zone_api_token          string
+		dns_ttl                 int64
+		dns_propagation_timeout int64
+		dns_polling_interval    int64
 	)
 
 	c := &cobra.Command{
@@ -146,6 +150,21 @@ func cmdDNSSet() *cobra.Command {
 				if cmd.Flags().Lookup("zonetoken").Changed {
 					setDnsUserProfile(dns, "zone_api_token", zone_api_token)
 				}
+
+				// set dns ttl
+				if cmd.Flags().Lookup("ttl").Changed {
+					setDnsUserProfile(dns, "dns_ttl", strconv.Itoa(int(dns_ttl)))
+				}
+
+				// set dns propagation timeout
+				if cmd.Flags().Lookup("propagation").Changed {
+					setDnsUserProfile(dns, "dns_propagation_timeout", strconv.Itoa(int(dns_propagation_timeout)))
+				}
+
+				// set dns polling interval
+				if cmd.Flags().Lookup("propagation").Changed {
+					setDnsUserProfile(dns, "dns_polling_interval", strconv.Itoa(int(dns_polling_interval)))
+				}
 			} else {
 				cmd.Help()
 			}
@@ -154,6 +173,9 @@ func cmdDNSSet() *cobra.Command {
 
 	c.Flags().BoolVar(&enabled, "enable", true, "enable DNS user profile")
 	c.Flags().BoolVar(&enabled, "disable", false, "disable DNS user profile")
+	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", certark.DefaultDnsUserProfile.DnsTTL, "set dns record ttl")
+	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", certark.DefaultDnsUserProfile.DnsPropagationTimeout, "set propagation timeout in seconds")
+	c.Flags().Int64Var(&dns_polling_interval, "interval", certark.DefaultDnsUserProfile.DnsPollingInterval, "set polling interval in seconds")
 
 	c.Flags().StringVarP(&provider, "provider", "p", certark.DefaultDnsUserProfile.Provider, "set DNS provider")
 	c.Flags().StringVarP(&account, "account", "a", certark.DefaultDnsUserProfile.Account, "set DNS provider account")

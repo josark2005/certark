@@ -9,17 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// check if task profile exists
-func checkTaskProfileExists(taskname string) bool {
-	res := certark.FileOrDirExists(certark.TaskConfigDir + "/" + taskname)
-	if res {
-		ark.Debug().Msg("Task profile exists")
-	} else {
-		ark.Debug().Msg("Task profile does not exist")
-	}
-	return res
-}
-
 func init() {
 	// task main command
 	var taskCmd = cmdTask()
@@ -244,30 +233,6 @@ func cmdTaskSet() *cobra.Command {
 					}
 				}
 
-				// // set dns ttl
-				// if cmd.Flags().Lookup("ttl").Changed {
-				// 	ok := setTaskProfile(task, "dns_ttl", strconv.Itoa(int(dns_ttl)))
-				// 	if !ok {
-				// 		ark.Error().Msg("Set dns ttl failed")
-				// 	}
-				// }
-
-				// // set dns propagation timeout
-				// if cmd.Flags().Lookup("propagation").Changed {
-				// 	ok := setTaskProfile(task, "dns_propagation_timeout", strconv.Itoa(int(dns_propagation_timeout)))
-				// 	if !ok {
-				// 		ark.Error().Msg("Set dns propagation timeout failed")
-				// 	}
-				// }
-
-				// // set dns polling interval
-				// if cmd.Flags().Lookup("propagation").Changed {
-				// 	ok := setTaskProfile(task, "dns_polling_interval", strconv.Itoa(int(dns_polling_interval)))
-				// 	if !ok {
-				// 		ark.Error().Msg("Set dns polling interval failed")
-				// 	}
-				// }
-
 				// set url check enable
 				if cmd.Flags().Lookup("url_check_enable").Changed {
 					ok := setTaskProfile(task, "url_check_enable", "true")
@@ -312,9 +277,6 @@ func cmdTaskSet() *cobra.Command {
 	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
 
 	c.Flags().StringVarP(&dns_profile, "profile", "p", certark.DefaultTaskProfile.DnsProfile, "set dns profile")
-	// c.Flags().Int64VarP(&dns_ttl, "ttl", "t", certark.DefaultTaskProfile.DnsTTL, "set dns record ttl")
-	// c.Flags().Int64Var(&dns_propagation_timeout, "propagation", certark.DefaultTaskProfile.DnsPropagationTimeout, "set propagation timeout in seconds")
-	// c.Flags().Int64Var(&dns_polling_interval, "interval", certark.DefaultTaskProfile.DnsPollingInterval, "set polling interval in seconds")
 
 	c.Flags().BoolVar(&url_check_enable, "url_check_enable", true, "enable url check")
 	c.Flags().BoolVar(&url_check_enable, "url_check_disable", false, "disable url check")
