@@ -1,19 +1,12 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"strconv"
 
-	"github.com/go-acme/lego/v4/certcrypto"
-	"github.com/go-acme/lego/v4/lego"
-	"github.com/jokin1999/certark/acme"
-	"github.com/jokin1999/certark/acme/drivers"
 	"github.com/jokin1999/certark/ark"
 	"github.com/jokin1999/certark/certark"
 	"github.com/spf13/cobra"
-	"github.com/tidwall/gjson"
 )
 
 // check if task profile exists
@@ -190,16 +183,16 @@ func cmdTaskSetAcmeUser() *cobra.Command {
 // task set
 func cmdTaskSet() *cobra.Command {
 	var (
-		domain                  string
-		acmeuser                string
-		enabled                 bool
-		dns_profile             string
-		dns_ttl                 int64
-		dns_propagation_timeout int64
-		dns_polling_interval    int64
-		url_check_enable        bool
-		url_check_target        string
-		url_check_interval      int64
+		domain      string
+		acmeuser    string
+		enabled     bool
+		dns_profile string
+		// dns_ttl                 int64
+		// dns_propagation_timeout int64
+		// dns_polling_interval    int64
+		url_check_enable   bool
+		url_check_target   string
+		url_check_interval int64
 	)
 
 	c := &cobra.Command{
@@ -251,29 +244,29 @@ func cmdTaskSet() *cobra.Command {
 					}
 				}
 
-				// set dns ttl
-				if cmd.Flags().Lookup("ttl").Changed {
-					ok := setTaskProfile(task, "dns_ttl", strconv.Itoa(int(dns_ttl)))
-					if !ok {
-						ark.Error().Msg("Set dns ttl failed")
-					}
-				}
+				// // set dns ttl
+				// if cmd.Flags().Lookup("ttl").Changed {
+				// 	ok := setTaskProfile(task, "dns_ttl", strconv.Itoa(int(dns_ttl)))
+				// 	if !ok {
+				// 		ark.Error().Msg("Set dns ttl failed")
+				// 	}
+				// }
 
-				// set dns propagation timeout
-				if cmd.Flags().Lookup("propagation").Changed {
-					ok := setTaskProfile(task, "dns_propagation_timeout", strconv.Itoa(int(dns_propagation_timeout)))
-					if !ok {
-						ark.Error().Msg("Set dns propagation timeout failed")
-					}
-				}
+				// // set dns propagation timeout
+				// if cmd.Flags().Lookup("propagation").Changed {
+				// 	ok := setTaskProfile(task, "dns_propagation_timeout", strconv.Itoa(int(dns_propagation_timeout)))
+				// 	if !ok {
+				// 		ark.Error().Msg("Set dns propagation timeout failed")
+				// 	}
+				// }
 
-				// set dns polling interval
-				if cmd.Flags().Lookup("propagation").Changed {
-					ok := setTaskProfile(task, "dns_polling_interval", strconv.Itoa(int(dns_polling_interval)))
-					if !ok {
-						ark.Error().Msg("Set dns polling interval failed")
-					}
-				}
+				// // set dns polling interval
+				// if cmd.Flags().Lookup("propagation").Changed {
+				// 	ok := setTaskProfile(task, "dns_polling_interval", strconv.Itoa(int(dns_polling_interval)))
+				// 	if !ok {
+				// 		ark.Error().Msg("Set dns polling interval failed")
+				// 	}
+				// }
 
 				// set url check enable
 				if cmd.Flags().Lookup("url_check_enable").Changed {
@@ -318,10 +311,10 @@ func cmdTaskSet() *cobra.Command {
 	c.Flags().BoolVar(&enabled, "enable", true, "enable task")
 	c.Flags().BoolVar(&enabled, "disable", false, "disable task")
 
-	c.Flags().StringVarP(&dns_profile, "profile", "p", certark.DefaultTaskProfile.DNSProfile, "set dns profile")
-	c.Flags().Int64VarP(&dns_ttl, "ttl", "t", certark.DefaultTaskProfile.DNSTTL, "set dns record ttl")
-	c.Flags().Int64Var(&dns_propagation_timeout, "propagation", certark.DefaultTaskProfile.DNSPropagationTimeout, "set propagation timeout in seconds")
-	c.Flags().Int64Var(&dns_polling_interval, "interval", certark.DefaultTaskProfile.DNSPollingInterval, "set polling interval in seconds")
+	c.Flags().StringVarP(&dns_profile, "profile", "p", certark.DefaultTaskProfile.DnsProfile, "set dns profile")
+	// c.Flags().Int64VarP(&dns_ttl, "ttl", "t", certark.DefaultTaskProfile.DnsTTL, "set dns record ttl")
+	// c.Flags().Int64Var(&dns_propagation_timeout, "propagation", certark.DefaultTaskProfile.DnsPropagationTimeout, "set propagation timeout in seconds")
+	// c.Flags().Int64Var(&dns_polling_interval, "interval", certark.DefaultTaskProfile.DnsPollingInterval, "set polling interval in seconds")
 
 	c.Flags().BoolVar(&url_check_enable, "url_check_enable", true, "enable url check")
 	c.Flags().BoolVar(&url_check_enable, "url_check_disable", false, "disable url check")
@@ -341,7 +334,12 @@ func cmdTaskRun() *cobra.Command {
 			}
 			if len(args) > 0 {
 				task := args[0]
-				runTask(task)
+				err := runTask(task)
+				if err != nil {
+					ark.Error().Err(err).Msg("Failed to run task")
+				} else {
+					ark.Info().Str("task", task).Msg("Task executed")
+				}
 			} else {
 				cmd.Help()
 			}
@@ -422,65 +420,6 @@ func setAcmeUserTaskProfile(task string, acme string) {
 }
 
 // run task
-func runTask(task string) {
-	if !checkTaskProfileExists(task) {
-		err := errors.New("task does not existed")
-		ark.Error().Err(err).Msg("Failed to run task")
-		return
-	}
-
-	// read profile
-	profileContent, err := os.ReadFile(certark.TaskConfigDir + "/" + task)
-	if err != nil {
-		ark.Error().Err(err).Msg("Failed to run task")
-		return
-	}
-	ark.Debug().Str("content", string(profileContent)).Msg("Read task profile")
-
-	profile := string(profileContent)
-	acmeUser := gjson.Get(profile, "acme_user").String()
-
-	// check if acme user exists
-	if !certark.CheckAcmeUserExists(acmeUser) {
-		err := errors.New("acme user does not existed")
-		ark.Error().Err(err).Str("task", task).Msg("Failed to found acme user in task profile")
-		return
-	}
-
-	// read acme user profile
-	au, err := certark.GetAcmeUser(acmeUser)
-	if err != nil {
-		ark.Error().Err(err).Str("task", task).Msg("Read acme user failed")
-		return
-	}
-	config := lego.NewConfig(&acme.AcmeUser{
-		Email: au.Email,
-		Key:   acme.PrivateKeyDecode(au.PrivateKey),
-	})
-	config.CADirURL = lego.LEDirectoryStaging
-	config.Certificate.KeyType = certcrypto.RSA2048
-
-	client, err := lego.NewClient(config)
-	if err != nil {
-		panic(err)
-	}
-
-	// println(client)
-
-	//TODO -
-	// new provider
-	drivers.ImportDrivers()
-	provider_name := gjson.Get(profile, "dns_provider").String()
-	driverCons, err := acme.GetDriver(provider_name)
-	if err != nil {
-		ark.Error().Err(err).Msg("Init dns driver failed")
-		return
-	}
-	driver := driverCons()
-
-	res, err := driver.RequestCertificate(client)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(res)
+func runTask(name string) error {
+	return certark.RunTaskIndependently(name)
 }

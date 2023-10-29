@@ -49,7 +49,7 @@ func checkTaskValidity() {
 		}
 
 		// check dns profile
-		if task.DNSProfile == "" {
+		if task.DnsProfile == "" {
 			ark.Warn().Str("task", taskName).Str("reason", "empty dns profile").Msg("Task is invalid")
 			TaskNotValid[taskName] = task
 			delete(Tasks, taskName)

@@ -14,17 +14,6 @@ import (
 	"github.com/jokin1999/certark/ark"
 )
 
-const (
-	MODE_STAGING    = 0
-	MODE_PRODUCTION = 1
-)
-
-type AcmeUser struct {
-	Email        string
-	Registration *registration.Resource
-	Key          crypto.PrivateKey
-}
-
 func (u *AcmeUser) GetEmail() string {
 	return u.Email
 }

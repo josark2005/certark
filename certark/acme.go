@@ -25,6 +25,11 @@ func CheckAcmeUserExists(name string) bool {
 func GetAcmeUser(name string) (AcmeUserProfile, error) {
 	profilePath := GetAcmeUserFilepath(name)
 
+	if !CheckAcmeUserExists(name) {
+		err := errors.New("acme user profile does not exist")
+		return AcmeUserProfile{}, err
+	}
+
 	profile := AcmeUserProfile{}
 	err := ReadFileAndParseJson(profilePath, &profile)
 	if err != nil {
@@ -103,7 +108,7 @@ func AddAcmeUser(name string, email string) error {
 
 // remove acme user
 func RemoveAcmeUser(name string) error {
-	if CheckAcmeUserExists(name) {
+	if !CheckAcmeUserExists(name) {
 		err := errors.New("user does not exist")
 		return err
 	}
@@ -118,7 +123,7 @@ func RemoveAcmeUser(name string) error {
 
 // set acme user private key in file
 func SetAcmeUserPrivateKeyInFile(name string, privateKeyFilepath string) error {
-	if CheckAcmeUserExists(name) {
+	if !CheckAcmeUserExists(name) {
 		err := errors.New("user does not exist")
 		return err
 	}
@@ -142,7 +147,7 @@ func SetAcmeUserPrivateKeyInFile(name string, privateKeyFilepath string) error {
 
 // register acme user
 func RegisterAcmeUser(name string) error {
-	if CheckAcmeUserExists(name) {
+	if !CheckAcmeUserExists(name) {
 		err := errors.New("user does not exist")
 		return err
 	}
@@ -153,9 +158,9 @@ func RegisterAcmeUser(name string) error {
 	}
 	privateKey := ""
 	if CurrentConfig.Mode == MODE_PROD {
-		privateKey = acme.RegisterAcmeUser(name, acme.MODE_PRODUCTION)
+		privateKey = acme.RegisterAcmeUser(profile.Email, acme.MODE_PRODUCTION)
 	} else {
-		privateKey = acme.RegisterAcmeUser(name, acme.MODE_STAGING)
+		privateKey = acme.RegisterAcmeUser(profile.Email, acme.MODE_STAGING)
 	}
 
 	profile.PrivateKey = privateKey

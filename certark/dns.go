@@ -23,6 +23,11 @@ func CheckDnsUserExists(name string) bool {
 
 // get dns profile
 func GetDns(name string) (DnsUserProfile, error) {
+	if !CheckDnsUserExists(name) {
+		err := errors.New("dns profile does not exist")
+		return DnsUserProfile{}, err
+	}
+
 	profilePath := GetDnsFilepath(name)
 
 	profile := DnsUserProfile{}
@@ -36,6 +41,11 @@ func GetDns(name string) (DnsUserProfile, error) {
 
 // get dns profile json
 func GetDnsJson(name string) ([]byte, error) {
+	if !CheckDnsUserExists(name) {
+		err := errors.New("dns profile does not exist")
+		return []byte{}, err
+	}
+
 	profilePath := GetDnsFilepath(name)
 
 	content, err := os.ReadFile(profilePath)
@@ -48,6 +58,11 @@ func GetDnsJson(name string) ([]byte, error) {
 
 // get dns profile json pretty
 func GetDnsJsonPretty(name string) (string, error) {
+	if !CheckDnsUserExists(name) {
+		err := errors.New("dns profile does not exist")
+		return "", err
+	}
+
 	profileContent, err := GetDnsJson(name)
 	if err != nil {
 		return "", err
@@ -132,11 +147,11 @@ func SetDnsUserProfile(name string, key string, value string) error {
 	case "account":
 		dns.Account = value
 	case "api_key":
-		dns.APIKey = value
-	case "dns_api_key":
-		dns.APIKey = value
+		dns.ApiKey = value
+	case "dns_api_token":
+		dns.ApiKey = value
 	case "zone_api_token":
-		dns.ZoneAPIToken = value
+		dns.ZoneApiToken = value
 	default:
 		return errors.New("failed to found a valid item")
 	}

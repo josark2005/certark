@@ -11,3 +11,11 @@ var DefaultAcmeUserProfile = AcmeUserProfile{
 	PrivateKey: "",
 	Enabled:    true,
 }
+
+func (a *AcmeUserProfile) GetEmail() string {
+	return a.Email
+}
+
+func (a *AcmeUserProfile) GetPrivateKey() string {
+	return a.PrivateKey
+}

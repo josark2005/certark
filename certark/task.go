@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/jokin1999/certark/acme"
+	"github.com/jokin1999/certark/acme/drivers"
 )
 
 // get acme user filepath
@@ -22,6 +26,11 @@ func CheckTaskExists(name string) bool {
 
 // get task
 func GetTask(name string) (TaskProfile, error) {
+	if !CheckTaskExists(name) {
+		err := errors.New("task profile does not exist")
+		return TaskProfile{}, err
+	}
+
 	profilePath := GetTaskFilepath(name)
 
 	profile := TaskProfile{}
@@ -35,6 +44,10 @@ func GetTask(name string) (TaskProfile, error) {
 
 // get task json
 func GetTaskJson(name string) ([]byte, error) {
+	if !CheckTaskExists(name) {
+		err := errors.New("task profile does not exist")
+		return []byte{}, err
+	}
 	profilePath := GetTaskFilepath(name)
 
 	content, err := os.ReadFile(profilePath)
@@ -47,6 +60,11 @@ func GetTaskJson(name string) ([]byte, error) {
 
 // get task json pretty
 func GetTaskJsonPretty(name string) (string, error) {
+	if !CheckTaskExists(name) {
+		err := errors.New("task profile does not exist")
+		return "", err
+	}
+
 	profileContent, err := GetTaskJson(name)
 	if err != nil {
 		return "", err
@@ -119,7 +137,7 @@ func SetTaskProfile(name string, key string, value string) error {
 
 	switch key {
 	case "domain":
-		task.Domain = []string{value}
+		task.Domains = []string{value}
 	case "acme_user":
 		if CheckAcmeUserExists(value) {
 			task.AcmeUser = value
@@ -135,29 +153,29 @@ func SetTaskProfile(name string, key string, value string) error {
 		}
 	case "dns_profile":
 		if CheckDnsUserExists(value) {
-			task.DNSProfile = value
+			task.DnsProfile = value
 		} else {
 			return errors.New("failed to find dns profile")
 		}
-		task.DNSProfile = value
-	case "dns_ttl":
-		v, e := strconv.Atoi(value)
-		if e != nil {
-			return e
-		}
-		task.DNSTTL = int64(v)
-	case "dns_propagation_timeout":
-		v, e := strconv.Atoi(value)
-		if e != nil {
-			return e
-		}
-		task.DNSPropagationTimeout = int64(v)
-	case "dns_polling_interval":
-		v, e := strconv.Atoi(value)
-		if e != nil {
-			return e
-		}
-		task.DNSPollingInterval = int64(v)
+		task.DnsProfile = value
+	// case "dns_ttl":
+	// 	v, e := strconv.Atoi(value)
+	// 	if e != nil {
+	// 		return e
+	// 	}
+	// 	task.DnsTTL = int64(v)
+	// case "dns_propagation_timeout":
+	// 	v, e := strconv.Atoi(value)
+	// 	if e != nil {
+	// 		return e
+	// 	}
+	// 	task.DnsPropagationTimeout = int64(v)
+	// case "dns_polling_interval":
+	// 	v, e := strconv.Atoi(value)
+	// 	if e != nil {
+	// 		return e
+	// 	}
+	// 	task.DnsPollingInterval = int64(v)
 	case "url_check_enable":
 		if value == "true" {
 			task.UrlCheckEnable = true
@@ -196,7 +214,7 @@ func AppendDomainTaskProfile(name string, domains []string) error {
 		return err
 	}
 
-	task.Domain = append(task.Domain, domains...)
+	task.Domains = append(task.Domains, domains...)
 
 	err = WriteStructToFile(task, GetTaskFilepath(name))
 	if err != nil {
@@ -219,7 +237,7 @@ func SubtractDomainTaskProfile(name string, domain string) error {
 	}
 
 	domainsNew := []string{}
-	for _, v := range task.Domain {
+	for _, v := range task.Domains {
 		if v != domain {
 			domainsNew = append(domainsNew, v)
 		} else {
@@ -227,7 +245,7 @@ func SubtractDomainTaskProfile(name string, domain string) error {
 		}
 	}
 
-	task.Domain = domainsNew
+	task.Domains = domainsNew
 
 	err = WriteStructToFile(task, GetTaskFilepath(name))
 	if err != nil {
@@ -260,5 +278,54 @@ func SetAcmeUserTaskProfile(name string, acme string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// run task independently
+func RunTaskIndependently(name string) error {
+	// get task
+	task, err := GetTask(name)
+	if err != nil {
+		return err
+	}
+
+	// get acme
+	au, err := GetAcmeUser(task.AcmeUser)
+	if err != nil {
+		return err
+	}
+
+	// get dns
+	dns, err := GetDns(task.DnsProfile)
+	if err != nil {
+		return err
+	}
+
+	drivers.ImportDrivers()
+
+	// get acme driver
+	driverConst, err := acme.GetDriver(dns.Provider)
+	if err != nil {
+		return err
+	}
+	driver := driverConst()
+	driver.LoadConf(task.Domains, &dns)
+	provider, err := driver.NewDnsProviderConfig()
+	if err != nil {
+		return err
+	}
+
+	// generate acme client
+	acmeUser, conf := acme.NewConfigWithProfile(&au, CurrentConfig.Mode)
+	acmeClient, err := acme.NewClient(conf, acmeUser, provider)
+	if err != nil {
+		return err
+	}
+
+	res, err := driver.RequestCertificate(acmeClient)
+	if err != nil {
+		return err
+	}
+	fmt.Println(res)
 	return nil
 }

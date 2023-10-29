@@ -114,12 +114,12 @@ func cmdDNSSet() *cobra.Command {
 				dns := args[0]
 				// set dns user profile enabled
 				if cmd.Flags().Lookup("enable").Changed {
-					setDnsUserProfile(dns, "enable", "true")
+					setDnsUserProfile(dns, "enabled", "true")
 				}
 
 				// set dns user profile disbaled
 				if cmd.Flags().Lookup("disable").Changed {
-					setDnsUserProfile(dns, "enable", "false")
+					setDnsUserProfile(dns, "enabled", "false")
 				}
 
 				// set dns user profile provider
@@ -157,9 +157,9 @@ func cmdDNSSet() *cobra.Command {
 
 	c.Flags().StringVarP(&provider, "provider", "p", certark.DefaultDnsUserProfile.Provider, "set DNS provider")
 	c.Flags().StringVarP(&account, "account", "a", certark.DefaultDnsUserProfile.Account, "set DNS provider account")
-	c.Flags().StringVarP(&api_key, "apikey", "k", certark.DefaultDnsUserProfile.APIKey, "set DNS account API key")
-	c.Flags().StringVarP(&dns_api_token, "dnstoken", "d", certark.DefaultDnsUserProfile.DNSAPIToken, "set DNS edit API token")
-	c.Flags().StringVarP(&zone_api_token, "zonetoken", "z", certark.DefaultDnsUserProfile.ZoneAPIToken, "set DNS zone read API token")
+	c.Flags().StringVarP(&api_key, "apikey", "k", certark.DefaultDnsUserProfile.ApiKey, "set DNS account API key")
+	c.Flags().StringVarP(&dns_api_token, "dnstoken", "d", certark.DefaultDnsUserProfile.DnsApiToken, "set DNS edit API token")
+	c.Flags().StringVarP(&zone_api_token, "zonetoken", "z", certark.DefaultDnsUserProfile.ZoneApiToken, "set DNS zone read API token")
 	return c
 }
 
