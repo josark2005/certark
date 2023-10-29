@@ -195,74 +195,47 @@ func cmdTaskSet() *cobra.Command {
 				task := args[0]
 				// set domain
 				if cmd.Flags().Lookup("domain").Changed {
-					ok := setTaskProfile(task, "domain", domain)
-					if !ok {
-						ark.Error().Msg("Set domain failed")
-					}
+					setTaskProfile(task, "domain", domain)
 				}
 
 				// set acme user
 				if cmd.Flags().Lookup("user").Changed {
-					ok := setTaskProfile(task, "acme_user", acmeuser)
-					if !ok {
-						ark.Error().Msg("Set acme user failed")
-					}
+					setTaskProfile(task, "acme_user", acmeuser)
 				}
 
 				// set task enable
 				if cmd.Flags().Lookup("enable").Changed {
-					ok := setTaskProfile(task, "enable", "true")
-					if !ok {
-						ark.Error().Msg("Enable task failed")
-					}
+					setTaskProfile(task, "enable", "true")
 				}
 
 				// set task disable
 				if cmd.Flags().Lookup("disable").Changed {
-					ok := setTaskProfile(task, "enable", "false")
-					if !ok {
-						ark.Error().Msg("Enable task failed")
-					}
+					setTaskProfile(task, "enable", "false")
 				}
 
 				// set dns profile
 				if cmd.Flags().Lookup("profile").Changed {
-					ok := setTaskProfile(task, "dns_profile", dns_profile)
-					if !ok {
-						ark.Error().Msg("Set dns profile failed")
-					}
+					setTaskProfile(task, "dns_profile", dns_profile)
 				}
 
 				// set url check enable
 				if cmd.Flags().Lookup("url_check_enable").Changed {
-					ok := setTaskProfile(task, "url_check_enable", "true")
-					if !ok {
-						ark.Error().Msg("Enable url check failed")
-					}
+					setTaskProfile(task, "url_check_enable", "true")
 				}
 
 				// set url check disable
 				if cmd.Flags().Lookup("url_check_disable").Changed {
-					ok := setTaskProfile(task, "url_check_enable", "false")
-					if !ok {
-						ark.Error().Msg("Enable url check failed")
-					}
+					setTaskProfile(task, "url_check_enable", "false")
 				}
 
 				// set url check target
 				if cmd.Flags().Lookup("url_check_target").Changed {
-					ok := setTaskProfile(task, "url_check_target", url_check_target)
-					if !ok {
-						ark.Error().Msg("Set url check target failed")
-					}
+					setTaskProfile(task, "url_check_target", url_check_target)
 				}
 
 				// set url check interval
 				if cmd.Flags().Lookup("url_check_interval").Changed {
-					ok := setTaskProfile(task, "url_check_interval", strconv.Itoa(int(url_check_interval)))
-					if !ok {
-						ark.Error().Msg("Set url check interval failed")
-					}
+					setTaskProfile(task, "url_check_interval", strconv.Itoa(int(url_check_interval)))
 				}
 
 			} else {
