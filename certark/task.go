@@ -158,24 +158,6 @@ func SetTaskProfile(name string, key string, value string) error {
 			return errors.New("failed to find dns profile")
 		}
 		task.DnsProfile = value
-	// case "dns_ttl":
-	// 	v, e := strconv.Atoi(value)
-	// 	if e != nil {
-	// 		return e
-	// 	}
-	// 	task.DnsTTL = int64(v)
-	// case "dns_propagation_timeout":
-	// 	v, e := strconv.Atoi(value)
-	// 	if e != nil {
-	// 		return e
-	// 	}
-	// 	task.DnsPropagationTimeout = int64(v)
-	// case "dns_polling_interval":
-	// 	v, e := strconv.Atoi(value)
-	// 	if e != nil {
-	// 		return e
-	// 	}
-	// 	task.DnsPollingInterval = int64(v)
 	case "url_check_enable":
 		if value == "true" {
 			task.UrlCheckEnable = true
