@@ -309,5 +309,7 @@ func RunTaskIndependently(name string) error {
 		return err
 	}
 	fmt.Println(res)
+
+	//TODO - Save states
 	return nil
 }

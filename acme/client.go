@@ -1,8 +1,6 @@
 package acme
 
 import (
-	"fmt"
-
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/lego"
@@ -61,8 +59,6 @@ func NewClient(c *lego.Config, acmeUser *AcmeUser, provider challenge.Provider) 
 		return client, err
 	}
 	acmeUser.Registration = reg
-	fmt.Println("b", reg.Body)
-	fmt.Println("s", reg.Body.Status)
 
 	return client, nil
 }
