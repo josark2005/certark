@@ -11,25 +11,25 @@ import (
 
 func init() {
 	// dns main command
-	var dnsCmd = cmdDNS()
+	var dnsCmd = cmdDns()
 
 	// dns ls
-	dnsCmd.AddCommand(cmdDNSLs())
+	dnsCmd.AddCommand(cmdDnsLs())
 
 	// dns show
-	dnsCmd.AddCommand(cmdDNSShow())
+	dnsCmd.AddCommand(cmdDnsShow())
 
 	// dns add
-	dnsCmd.AddCommand(cmdDNSAdd())
+	dnsCmd.AddCommand(cmdDnsAdd())
 
 	// dns set
-	dnsCmd.AddCommand(cmdDNSSet())
+	dnsCmd.AddCommand(cmdDnsSet())
 
 	rootCmd.AddCommand(dnsCmd)
 }
 
 // dns command
-func cmdDNS() *cobra.Command {
+func cmdDns() *cobra.Command {
 	return &cobra.Command{
 		Use:   "dns",
 		Short: "DNS user profiles management",
@@ -40,7 +40,7 @@ func cmdDNS() *cobra.Command {
 }
 
 // dns ls
-func cmdDNSLs() *cobra.Command {
+func cmdDnsLs() *cobra.Command {
 	return &cobra.Command{
 		Use:   "ls",
 		Short: "List DNS user profiles",
@@ -54,7 +54,7 @@ func cmdDNSLs() *cobra.Command {
 }
 
 // dns show
-func cmdDNSShow() *cobra.Command {
+func cmdDnsShow() *cobra.Command {
 	return &cobra.Command{
 		Use:   "show [TASK]",
 		Short: "Show a task profile",
@@ -73,7 +73,7 @@ func cmdDNSShow() *cobra.Command {
 }
 
 // dns add
-func cmdDNSAdd() *cobra.Command {
+func cmdDnsAdd() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "add [DNS]",
 		Short: "Add an DNS user profile",
@@ -94,7 +94,7 @@ func cmdDNSAdd() *cobra.Command {
 }
 
 // dns set
-func cmdDNSSet() *cobra.Command {
+func cmdDnsSet() *cobra.Command {
 	var (
 		enabled                 bool
 		provider                string
