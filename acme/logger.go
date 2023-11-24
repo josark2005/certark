@@ -11,8 +11,7 @@ type ArkLogger struct {
 }
 
 func init() {
-	logger := ArkLogger{}
-	log.Logger = &logger
+	log.Logger = &ArkLogger{}
 }
 
 func (a *ArkLogger) Fatal(args ...interface{}) {

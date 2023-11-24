@@ -23,6 +23,7 @@ func checkAcmeUserValidity() {
 			delete(AcmeUsers, acmeUser)
 			continue
 		}
+		// check private key
 		if acme.PrivateKey == "" {
 			ark.Warn().Str("acme", acmeUser).Str("reason", "acme account privatekey is empty").Msg("Acme user is invalid")
 			AcmeUsersNotValid[acmeUser] = acme
@@ -47,9 +48,9 @@ func checkTaskValidity() {
 			continue
 		}
 
-		// check provider
-		if task.DNSProvider == "" {
-			ark.Warn().Str("task", taskName).Str("reason", "empty dns provider").Msg("Task is invalid")
+		// check dns profile
+		if task.DnsProfile == "" {
+			ark.Warn().Str("task", taskName).Str("reason", "empty dns profile").Msg("Task is invalid")
 			TaskNotValid[taskName] = task
 			delete(Tasks, taskName)
 			continue
