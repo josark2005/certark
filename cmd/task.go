@@ -70,8 +70,9 @@ func cmdTaskLs() *cobra.Command {
 // task show
 func cmdTaskShow() *cobra.Command {
 	return &cobra.Command{
-		Use:   "show [TASK]",
-		Short: "Show a task profile",
+		Use:     "show [TASK]",
+		Short:   "Show / inspec a task profile",
+		Aliases: []string{"inspec"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")

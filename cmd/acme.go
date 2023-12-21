@@ -48,8 +48,9 @@ func cmdAcme() *cobra.Command {
 // acme ls
 func cmdAcmeLs() *cobra.Command {
 	return &cobra.Command{
-		Use:   "ls",
-		Short: "List acme user profiles",
+		Use:     "ls",
+		Short:   "List acme user profiles",
+		Aliases: []string{"inspec"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
