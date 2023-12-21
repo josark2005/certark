@@ -3,8 +3,8 @@ package cmd
 import (
 	"os"
 
-	"github.com/jokin1999/certark/ark"
-	"github.com/jokin1999/certark/certark"
+	"github.com/josark2005/certark/ark"
+	"github.com/josark2005/certark/certark"
 	"github.com/spf13/cobra"
 )
 

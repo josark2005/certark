@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/jokin1999/certark/ark"
+	"github.com/josark2005/certark/ark"
 	"github.com/spf13/cobra"
 )
 

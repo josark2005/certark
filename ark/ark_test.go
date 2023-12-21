@@ -3,7 +3,7 @@ package ark_test
 import (
 	"testing"
 
-	"github.com/jokin1999/certark/ark"
+	"github.com/josark2005/certark/ark"
 )
 
 func TestLog(T *testing.T) {

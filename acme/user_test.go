@@ -11,7 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/providers/dns/cloudflare"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/jokin1999/certark/acme"
+	"github.com/josark2005/certark/acme"
 )
 
 func TestGenprivateKey(t *testing.T) {

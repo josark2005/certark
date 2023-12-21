@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/jokin1999/certark/ark"
-	"github.com/jokin1999/certark/certark"
-	"github.com/jokin1999/certark/cmd"
+	"github.com/josark2005/certark/ark"
+	"github.com/josark2005/certark/certark"
+	"github.com/josark2005/certark/cmd"
 )
 
 var version = "dev"

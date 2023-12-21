@@ -1,6 +1,6 @@
 package certark
 
-import "github.com/jokin1999/certark/ark"
+import "github.com/josark2005/certark/ark"
 
 // check acme user validity
 func checkAcmeUserValidity() {

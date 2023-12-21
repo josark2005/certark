@@ -1,4 +1,4 @@
-module github.com/jokin1999/certark
+module github.com/josark2005/certark
 
 go 1.20
 

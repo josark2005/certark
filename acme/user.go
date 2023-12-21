@@ -11,7 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/jokin1999/certark/ark"
+	"github.com/josark2005/certark/ark"
 )
 
 func (u *AcmeUser) GetEmail() string {

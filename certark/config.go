@@ -3,7 +3,7 @@ package certark
 import (
 	"os"
 
-	"github.com/jokin1999/certark/ark"
+	"github.com/josark2005/certark/ark"
 	"gopkg.in/yaml.v3"
 )
 

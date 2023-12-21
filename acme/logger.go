@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v4/log"
-	"github.com/jokin1999/certark/ark"
+	"github.com/josark2005/certark/ark"
 )
 
 type ArkLogger struct {

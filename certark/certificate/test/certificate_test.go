@@ -3,7 +3,7 @@ package certificate_test
 import (
 	"testing"
 
-	"github.com/jokin1999/certark/certark/certificate"
+	"github.com/josark2005/certark/certark/certificate"
 )
 
 const TestDomain = "josark.com"

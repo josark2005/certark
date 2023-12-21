@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/jokin1999/certark/certark"
+	"github.com/josark2005/certark/certark"
 )
 
 func TestGetDNSProfile(t *testing.T) {

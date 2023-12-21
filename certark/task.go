@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/jokin1999/certark/acme"
-	"github.com/jokin1999/certark/acme/drivers"
+	"github.com/josark2005/certark/acme"
+	"github.com/josark2005/certark/acme/drivers"
 )
 
 // get acme user filepath
