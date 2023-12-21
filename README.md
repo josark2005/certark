@@ -107,3 +107,18 @@ Different dns providers require distinctive API authentication element(s). DNS p
 - Permission required: 
   - `Zone / Zone / Read`
   - `Zone / DNS / Edit`
+
+
+## For Developers
+
+### Before Comimits
+
+#### git_conifig.sh
+
+It's very recommended to execute `scripts/dev/git_conifig.sh` file to set up a development standard environment.
+
+#### clean.sh
+
+If you want to clean configurations, logs or any other files that certark created, execute the `scripts/dev/clean.sh`. 
+
+**WARNING: ALL YOUR CONFIGURATION FILES WILL BE REMOVED AFTER EXECUTE THIS SHELL FILE**
