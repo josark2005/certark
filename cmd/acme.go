@@ -48,9 +48,8 @@ func cmdAcme() *cobra.Command {
 // acme ls
 func cmdAcmeLs() *cobra.Command {
 	return &cobra.Command{
-		Use:     "ls",
-		Short:   "List acme user profiles",
-		Aliases: []string{"inspec"},
+		Use:   "ls",
+		Short: "List acme user profiles",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
@@ -63,8 +62,9 @@ func cmdAcmeLs() *cobra.Command {
 // acme show
 func cmdAcmeShow() *cobra.Command {
 	return &cobra.Command{
-		Use:   "show [EMAIL]",
-		Short: "Show a acme user profile",
+		Use:     "show [EMAIL]",
+		Short:   "Show a acme user profile",
+		Aliases: []string{"inspec"},	
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")

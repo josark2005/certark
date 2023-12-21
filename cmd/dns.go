@@ -44,7 +44,6 @@ func cmdDnsLs() *cobra.Command {
 	return &cobra.Command{
 		Use:     "ls",
 		Short:   "List DNS user profiles",
-		Aliases: []string{"inspec"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
@@ -59,6 +58,7 @@ func cmdDnsShow() *cobra.Command {
 	return &cobra.Command{
 		Use:   "show [TASK]",
 		Short: "Show a task profile",
+		Aliases: []string{"inspec"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Error().Msg("Run condition check failed, try to run 'certark init' first")
