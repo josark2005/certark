@@ -1,4 +1,84 @@
-## 0.81.0 (Unreleased)
+## 0.85.0 (Unreleased)
+
+## 0.84.0 (December 20th, 2023)
+
+ENHANCEMENTS:
+
+* access_group: Add support for email lists ([#1445](https://github.com/cloudflare/cloudflare-go/issues/1445))
+* device_posture_rules: add support for Access client fields in device posture integrations ([#1464](https://github.com/cloudflare/cloudflare-go/issues/1464))
+* page_shield: added support for page shield ([#1459](https://github.com/cloudflare/cloudflare-go/issues/1459))
+
+DEPENDENCIES:
+
+* deps: bumps actions/setup-go from 4 to 5 ([#1460](https://github.com/cloudflare/cloudflare-go/issues/1460))
+* deps: bumps github/codeql-action from 2 to 3 ([#1462](https://github.com/cloudflare/cloudflare-go/issues/1462))
+* deps: bumps golang.org/x/crypto from 0.14.0 to 0.17.0 ([#1466](https://github.com/cloudflare/cloudflare-go/issues/1466))
+
+## 0.83.0 (December 6th, 2023)
+
+ENHANCEMENTS:
+
+* cloudflare: Add ResultInfo to RawResponse ([#1453](https://github.com/cloudflare/cloudflare-go/issues/1453))
+* devices_policy: add fields for Opt-In Split Tunnel Overlapping IPs feature. ([#1454](https://github.com/cloudflare/cloudflare-go/issues/1454))
+* stream: Add ScheduledDeletion to StreamCreateVideoParameters ([#1457](https://github.com/cloudflare/cloudflare-go/issues/1457))
+* stream: Add ScheduledDeletion to StreamUploadFromURLParameters ([#1457](https://github.com/cloudflare/cloudflare-go/issues/1457))
+* stream: Add ScheduledDeletion to StreamVideo ([#1457](https://github.com/cloudflare/cloudflare-go/issues/1457))
+* stream: Add ScheduledDeletion to StreamVideoCreate ([#1457](https://github.com/cloudflare/cloudflare-go/issues/1457))
+* worker_bindings: Fixing form element name for d1 binding ([#1450](https://github.com/cloudflare/cloudflare-go/issues/1450))
+* worker_bindings: add support for `d1` bindings ([#1446](https://github.com/cloudflare/cloudflare-go/issues/1446))
+
+DEPENDENCIES:
+
+* deps: bumps github.com/urfave/cli/v2 from 2.25.7 to 2.26.0 ([#1456](https://github.com/cloudflare/cloudflare-go/issues/1456))
+* deps: bumps golang.org/x/net from 0.18.0 to 0.19.0 ([#1452](https://github.com/cloudflare/cloudflare-go/issues/1452))
+* deps: bumps golang.org/x/time from 0.4.0 to 0.5.0 ([#1449](https://github.com/cloudflare/cloudflare-go/issues/1449))
+
+## 0.82.0 (November 22nd, 2023)
+
+ENHANCEMENTS:
+
+* ip_access_rules: Add ListIPAccessRules() to list IP Access Rules ([#1428](https://github.com/cloudflare/cloudflare-go/issues/1428))
+* load_balancing: add healthy field to LoadBalancerPool ([#1442](https://github.com/cloudflare/cloudflare-go/issues/1442))
+
+BUG FIXES:
+
+* load_balancing: Add support for virtual network id in origins ([#1441](https://github.com/cloudflare/cloudflare-go/issues/1441))
+* per_hostname_tls_setting: use `buildURI` for defining the query parameters when sorting ([#1440](https://github.com/cloudflare/cloudflare-go/issues/1440))
+
+DEPENDENCIES:
+
+* deps: bumps github.com/hashicorp/go-retryablehttp from 0.7.4 to 0.7.5 ([#1438](https://github.com/cloudflare/cloudflare-go/issues/1438))
+* deps: bumps golang.org/x/net from 0.17.0 to 0.18.0 ([#1439](https://github.com/cloudflare/cloudflare-go/issues/1439))
+
+## 0.81.0 (November 8th, 2023)
+
+BREAKING CHANGES:
+
+* devices_policy: `CreateDeviceSettingsPolicy` is updated with method signatures matching the library conventions ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `DeleteDeviceSettingsPolicy` is updated with method signatures matching the library conventions ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `DeviceClientCertificates` is renamed to `DeviceClientCertificates` ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `GetDefaultDeviceSettingsPolicy` is updated with method signatures matching the library conventions ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `GetDeviceClientCertificatesZone` is renamed to `GetDeviceClientCertificates` with updated method signatures ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `GetDeviceClientCertificates` is updated with method signatures matching the library conventions ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `GetDeviceSettingsPolicy` is updated with method signatures matching the library conventions ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `UpdateDefaultDeviceSettingsPolicy` is updated with method signatures matching the library conventions ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `UpdateDeviceClientCertificatesZone` is renamed to `UpdateDeviceClientCertificates` with updated method signatures ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* devices_policy: `UpdateDeviceSettingsPolicy` is updated with method signatures matching the library conventions ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+
+ENHANCEMENTS:
+
+* access_seats: Add UpdateAccessUserSeat() to list IP Access Rules ([#1427](https://github.com/cloudflare/cloudflare-go/issues/1427))
+* access_user: Add GetAccessUserActiveSessions() to get all active sessions for a Access/Zero-Trust user. ([#1427](https://github.com/cloudflare/cloudflare-go/issues/1427))
+* access_user: Add GetAccessUserFailedLogins() to get all failed login attempts for a Access/Zero-Trust user. ([#1427](https://github.com/cloudflare/cloudflare-go/issues/1427))
+* access_user: Add GetAccessUserLastSeenIdentity() to get last seen identity for a Access/Zero-Trust user. ([#1427](https://github.com/cloudflare/cloudflare-go/issues/1427))
+* access_user: Add GetAccessUserSingleActiveSession() to get an active session for a Access/Zero-Trust user. ([#1427](https://github.com/cloudflare/cloudflare-go/issues/1427))
+* access_user: Add ListAccessUsers() to get a list of users for a Access/Zero-Trust account. ([#1427](https://github.com/cloudflare/cloudflare-go/issues/1427))
+* devices_policy: Add support for listing device settings policies ([#1433](https://github.com/cloudflare/cloudflare-go/issues/1433))
+* teams_rules: Add support for resolver policies ([#1436](https://github.com/cloudflare/cloudflare-go/issues/1436))
+
+DEPENDENCIES:
+
+* deps: bumps golang.org/x/time from 0.3.0 to 0.4.0 ([#1434](https://github.com/cloudflare/cloudflare-go/issues/1434))
 
 ## 0.80.0 (October 25th, 2023)
 
@@ -11,7 +91,7 @@ ENHANCEMENTS:
 * access_application: Add support for app launcher customization fields ([#1407](https://github.com/cloudflare/cloudflare-go/issues/1407))
 * api_shield_schema: Add support for Get/Update API Shield Operation Schema Validation Settings ([#1422](https://github.com/cloudflare/cloudflare-go/issues/1422))
 * api_shield_schema: Add support for Get/Update API Shield Schema Validation Settings ([#1418](https://github.com/cloudflare/cloudflare-go/issues/1418))
-* foo: Add support for body_scanning (Enhanced File Detection) in teams account configuration ([#1423](https://github.com/cloudflare/cloudflare-go/issues/1423))
+* teams: Add support for body_scanning (Enhanced File Detection) in teams account configuration ([#1423](https://github.com/cloudflare/cloudflare-go/issues/1423))
 * load_balancing: extend documentation for least_connections steering policy ([#1414](https://github.com/cloudflare/cloudflare-go/issues/1414))
 * teams: Add `non_identity_enabled` boolean in browser isolation settings ([#1424](https://github.com/cloudflare/cloudflare-go/issues/1424))
 
