@@ -64,7 +64,7 @@ func cmdAcmeShow() *cobra.Command {
 	return &cobra.Command{
 		Use:     "show [EMAIL]",
 		Short:   "Show a acme user profile",
-		Aliases: []string{"inspec"},	
+		Aliases: []string{"inspec"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
@@ -107,7 +107,7 @@ func cmdAcmeAdd() *cobra.Command {
 			if !CheckRunCondition() {
 				ark.Fatal().Msg("Run condition check failed, try to run 'certark init' first")
 			}
-			if len(args) > 0 {
+			if len(args) == 2 {
 				acmeName := args[0]
 				acmeEmail := args[1]
 				if !certark.CheckEmail(acmeEmail) {
